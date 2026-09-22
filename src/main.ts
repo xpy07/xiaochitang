@@ -34,9 +34,9 @@ window.addEventListener("keydown", (e) => {
   }
 });
 
-function loop(): void {
-  pond.render();
+function loop(timeMs: number): void {
+  pond.render(timeMs);
   requestAnimationFrame(loop);
 }
 
-loop();
+requestAnimationFrame(loop);
