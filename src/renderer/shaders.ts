@@ -14,6 +14,8 @@ uniform float u_time;
 uniform vec3 u_shallowColor;
 uniform vec3 u_deepColor;
 uniform float u_waveStrength;
+uniform vec3 u_tint;
+uniform float u_brightness;
 
 void main() {
   vec2 uv = v_uv;
@@ -39,6 +41,8 @@ void main() {
   // Surface shimmer
   float shimmer = sin((distortedUV.x + distortedUV.y) * 60.0 + u_time * 3.0) * 0.02;
   color += shimmer;
+
+  color *= u_tint * u_brightness;
 
   gl_FragColor = vec4(color, 0.85);
 }

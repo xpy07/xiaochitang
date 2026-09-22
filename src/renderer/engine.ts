@@ -3,6 +3,8 @@ export interface RenderUniforms {
   shallowColor: [number, number, number];
   deepColor: [number, number, number];
   waveStrength: number;
+  tint: { r: number; g: number; b: number };
+  brightness: number;
 }
 
 export class RenderEngine {
@@ -37,7 +39,7 @@ export class RenderEngine {
     gl.vertexAttribPointer(posLoc, 2, gl.FLOAT, false, 0, 0);
 
     // Cache uniform locations
-    const names = ["u_time", "u_shallowColor", "u_deepColor", "u_waveStrength"];
+    const names = ["u_time", "u_shallowColor", "u_deepColor", "u_waveStrength", "u_tint", "u_brightness"];
     for (const name of names) {
       this.uniforms[name] = gl.getUniformLocation(this.program, name);
     }
@@ -54,6 +56,8 @@ export class RenderEngine {
     gl.uniform3f(this.uniforms.u_shallowColor, ...uniforms.shallowColor);
     gl.uniform3f(this.uniforms.u_deepColor, ...uniforms.deepColor);
     gl.uniform1f(this.uniforms.u_waveStrength, uniforms.waveStrength);
+    gl.uniform3f(this.uniforms.u_tint, uniforms.tint.r, uniforms.tint.g, uniforms.tint.b);
+    gl.uniform1f(this.uniforms.u_brightness, uniforms.brightness);
 
     gl.bindBuffer(gl.ARRAY_BUFFER, this.positionBuffer);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
