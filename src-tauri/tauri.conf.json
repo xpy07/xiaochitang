@@ -12,15 +12,14 @@
       {
         "label": "main",
         "title": "小鱼塘",
-        "width": 1920,
-        "height": 1080,
         "fullscreen": true,
         "decorations": false,
         "transparent": true,
-        "alwaysOnBottom": false,
+        "alwaysOnBottom": true,
         "skipTaskbar": true,
         "resizable": false,
-        "focus": false
+        "focus": false,
+        "shadow": false
       }
     ],
     "trayIcon": {
@@ -28,12 +27,12 @@
       "iconAsTemplate": true
     },
     "security": {
-      "csp": null
+      "csp": "default-src 'self'; img-src 'self' asset: data:; style-src 'self' 'unsafe-inline'"
     }
   },
   "bundle": {
     "active": true,
     "targets": ["msi", "nsis"],
-    "icon": ["icons/icon.png"]
+    "icon": ["icons/icon.png", "icons/icon.ico"]
   }
 }
