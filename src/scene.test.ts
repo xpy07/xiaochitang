@@ -29,12 +29,15 @@ describe("SceneManager", () => {
     expect(clip).toBeNull();
   });
 
-  it("pond mode returns a bounded clip region", () => {
+  it("pond mode returns a bounded clip region within screen", () => {
     const sm = new SceneManager();
-    const clip = sm.getClipRegion(1920, 1080);
+    const W = 1920, H = 1080;
+    const clip = sm.getClipRegion(W, H);
     expect(clip).not.toBeNull();
-    expect(clip!.width).toBeLessThanOrEqual(1920);
-    expect(clip!.height).toBeLessThanOrEqual(1080);
+    expect(clip!.x).toBeGreaterThanOrEqual(0);
+    expect(clip!.y).toBeGreaterThanOrEqual(0);
+    expect(clip!.x + clip!.width).toBeLessThanOrEqual(W);
+    expect(clip!.y + clip!.height).toBeLessThanOrEqual(H);
   });
 
   it("circle shape returns circular clip (width === height)", () => {
@@ -45,14 +48,27 @@ describe("SceneManager", () => {
     expect(clip!.width).toBeCloseTo(clip!.height);
   });
 
-  it("irregular shape returns clip region with larger footprint", () => {
+  it("irregular shape returns wider-than-tall clip", () => {
     const sm = new SceneManager();
     sm.setPondShape(PondShape.Irregular);
     const clip = sm.getClipRegion(1000, 1000);
     expect(clip!.shape).toBe(PondShape.Irregular);
-    expect(clip).not.toBeNull();
-    expect(clip!.width).toBeGreaterThan(0);
-    expect(clip!.height).toBeGreaterThan(0);
+    expect(clip!.width).toBeGreaterThan(clip!.height);
+  });
+
+  it("circle on non-square screen uses min dimension", () => {
+    const sm = new SceneManager();
+    sm.setPondShape(PondShape.Circle);
+    const clip = sm.getClipRegion(2000, 1000);
+    expect(clip!.width).toBeCloseTo(800); // 0.4 * min(2000,1000) * 2
+    expect(clip!.width).toBeCloseTo(clip!.height);
+  });
+
+  it("oval on tall screen is taller than wide", () => {
+    const sm = new SceneManager();
+    sm.setPondShape(PondShape.Oval);
+    const clip = sm.getClipRegion(1000, 2000);
+    expect(clip!.height).toBeGreaterThan(clip!.width);
   });
 
   it("oval shape returns wider-than-tall clip on wide screens", () => {
@@ -63,12 +79,12 @@ describe("SceneManager", () => {
     expect(clip!.width).toBeGreaterThan(clip!.height);
   });
 
-  it("roundedRect returns rectangular clip", () => {
+  it("roundedRect returns proportional rectangular clip", () => {
     const sm = new SceneManager();
     sm.setPondShape(PondShape.RoundedRect);
     const clip = sm.getClipRegion(1000, 1000);
     expect(clip!.shape).toBe(PondShape.RoundedRect);
-    expect(clip!.width).toBeCloseTo(700);
-    expect(clip!.height).toBeCloseTo(600);
+    expect(clip!.width / 1000).toBeCloseTo(0.7);
+    expect(clip!.height / 1000).toBeCloseTo(0.6);
   });
 });

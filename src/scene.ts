@@ -53,8 +53,11 @@ export class SceneManager {
       }
       case PondShape.Irregular: {
         const r = Math.min(screenW, screenH) * 0.42;
-        return { x: cx - r, y: cy - r, width: r * 2, height: r * 2, shape: PondShape.Irregular };
+        // wider than tall to differentiate from circle
+        return { x: cx - r * 1.2, y: cy - r * 0.8, width: r * 2.4, height: r * 1.6, shape: PondShape.Irregular };
       }
+      default:
+        return null;
     }
   }
 }

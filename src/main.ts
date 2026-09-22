@@ -15,6 +15,7 @@ listen("hotkey-toggle", () => {
 });
 
 window.addEventListener("keydown", (e) => {
+  if (e.repeat) return;
   if (e.key === "s" || e.key === "S") {
     pond.scene.toggleMode();
   }
