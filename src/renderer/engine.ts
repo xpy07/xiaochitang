@@ -1,9 +1,11 @@
+import { ColorTint } from "../sim/time";
+
 export interface RenderUniforms {
   time: number;
   shallowColor: [number, number, number];
   deepColor: [number, number, number];
   waveStrength: number;
-  tint: { r: number; g: number; b: number };
+  tint: ColorTint;
   brightness: number;
 }
 

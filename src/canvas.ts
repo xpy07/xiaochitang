@@ -2,7 +2,9 @@ import { SceneManager } from "./scene";
 import { RenderEngine } from "./renderer/engine";
 import { WaterRenderer } from "./renderer/water";
 import { VERT_SRC, FRAG_SRC } from "./renderer/shaders";
-import { DayCycleManager } from "./sim/time";
+import { ColorTint, DayCycleManager } from "./sim/time";
+
+const clock = new Date();
 
 export class PondCanvas {
   private canvas: HTMLCanvasElement;
@@ -11,6 +13,9 @@ export class PondCanvas {
   private dayCycle = new DayCycleManager();
   private logicalW = 0;
   private logicalH = 0;
+  private lightingHour = -1;
+  private lightingTint: ColorTint = { r: 1, g: 1, b: 1 };
+  private lightingBrightness = 1;
   scene: SceneManager;
 
   constructor() {
@@ -34,9 +39,14 @@ export class PondCanvas {
   }
 
   render(timeMs: number): void {
-    const now = new Date();
-    const hour = now.getHours() + now.getMinutes() / 60;
-    this.water.setLighting(this.dayCycle.getLightingTint(hour), this.dayCycle.getBrightness(hour));
+    clock.setTime(Date.now());
+    const hour = clock.getHours() + clock.getMinutes() / 60;
+    if (hour !== this.lightingHour) {
+      this.lightingHour = hour;
+      this.lightingTint = this.dayCycle.getLightingTint(hour);
+      this.lightingBrightness = this.dayCycle.getBrightness(hour);
+    }
+    this.water.setLighting(this.lightingTint, this.lightingBrightness);
     this.water.update(timeMs);
     this.water.render(this.canvas.width, this.canvas.height);
   }

@@ -35,11 +35,12 @@ export class DayCycleManager {
   getBrightness(hour: number): number {
     switch (this.getTimeOfDay(hour)) {
       case TimeOfDay.Dawn:
-        return 0.6;
+        return 0.4 + (hour - 5) / 3 * 0.2; // 0.4→0.6 across dawn
       case TimeOfDay.Day:
-        return 1.0;
+        // peak at noon
+        return 0.8 + 0.2 * Math.cos((hour - 12) / 8 * Math.PI);
       case TimeOfDay.Dusk:
-        return 0.5;
+        return 0.5 - (hour - 16) / 4 * 0.2; // 0.5→0.3 across dusk
       case TimeOfDay.Night:
         return 0.3;
     }

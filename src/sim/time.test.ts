@@ -44,10 +44,11 @@ describe("DayCycleManager", () => {
     expect(tint.r).toBeLessThan(1.0);
   });
 
-  it("returns warm-orange tint for dusk", () => {
+  it("returns orange tint for dusk (r > g > b)", () => {
     const dc = new DayCycleManager();
     const tint = dc.getLightingTint(18);
-    expect(tint.r).toBeGreaterThan(tint.b);
+    expect(tint.r).toBeGreaterThan(tint.g);
+    expect(tint.g).toBeGreaterThan(tint.b);
   });
 
   it("brightness is lower at night than day", () => {
@@ -60,9 +61,10 @@ describe("DayCycleManager", () => {
   it("brightness peaks at noon", () => {
     const dc = new DayCycleManager();
     const noon = dc.getBrightness(12);
-    const morning = dc.getBrightness(8);
-    const evening = dc.getBrightness(16);
-    expect(noon).toBeGreaterThanOrEqual(morning);
-    expect(noon).toBeGreaterThanOrEqual(evening);
+    const morning = dc.getBrightness(9);
+    const afternoon = dc.getBrightness(15);
+    expect(noon).toBeGreaterThan(morning);
+    expect(noon).toBeGreaterThan(afternoon);
+    expect(noon).toBeCloseTo(1.0);
   });
 });
