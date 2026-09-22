@@ -37,17 +37,38 @@ describe("SceneManager", () => {
     expect(clip!.height).toBeLessThanOrEqual(1080);
   });
 
-  it("circle shape returns circular clip", () => {
+  it("circle shape returns circular clip (width === height)", () => {
     const sm = new SceneManager();
+    sm.setPondShape(PondShape.Circle);
     const clip = sm.getClipRegion(1000, 1000);
     expect(clip!.shape).toBe(PondShape.Circle);
+    expect(clip!.width).toBeCloseTo(clip!.height);
   });
 
-  it("irregular shape returns clip region", () => {
+  it("irregular shape returns clip region with larger footprint", () => {
     const sm = new SceneManager();
     sm.setPondShape(PondShape.Irregular);
     const clip = sm.getClipRegion(1000, 1000);
     expect(clip!.shape).toBe(PondShape.Irregular);
     expect(clip).not.toBeNull();
+    expect(clip!.width).toBeGreaterThan(0);
+    expect(clip!.height).toBeGreaterThan(0);
+  });
+
+  it("oval shape returns wider-than-tall clip on wide screens", () => {
+    const sm = new SceneManager();
+    sm.setPondShape(PondShape.Oval);
+    const clip = sm.getClipRegion(2000, 1000);
+    expect(clip!.shape).toBe(PondShape.Oval);
+    expect(clip!.width).toBeGreaterThan(clip!.height);
+  });
+
+  it("roundedRect returns rectangular clip", () => {
+    const sm = new SceneManager();
+    sm.setPondShape(PondShape.RoundedRect);
+    const clip = sm.getClipRegion(1000, 1000);
+    expect(clip!.shape).toBe(PondShape.RoundedRect);
+    expect(clip!.width).toBeCloseTo(700);
+    expect(clip!.height).toBeCloseTo(600);
   });
 });
