@@ -1,14 +1,20 @@
-const canvas = document.getElementById("pond") as HTMLCanvasElement;
-const ctx = canvas.getContext("2d");
+import { invoke } from "@tauri-apps/api/core";
+import { listen } from "@tauri-apps/api/event";
+import { PondCanvas } from "./canvas";
 
-function resize() {
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
+const pond = new PondCanvas();
+let interactive = false;
+
+async function toggleInteraction(): Promise<void> {
+  interactive = await invoke<boolean>("toggle_interaction");
+  document.body.classList.toggle("interactive", interactive);
 }
 
-window.addEventListener("resize", resize);
-resize();
+listen("hotkey-toggle", () => toggleInteraction());
 
-if (ctx) {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+function loop(): void {
+  pond.render();
+  requestAnimationFrame(loop);
 }
+
+loop();

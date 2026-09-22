@@ -1,16 +1,24 @@
-html,
-body {
+* {
   margin: 0;
   padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
   width: 100%;
   height: 100%;
   overflow: hidden;
   background: transparent;
+  cursor: default;
   user-select: none;
 }
 
+body.interactive {
+  cursor: none;
+}
+
 #pond {
-  display: block;
   width: 100%;
   height: 100%;
+  display: block;
 }
