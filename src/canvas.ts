@@ -10,8 +10,12 @@ export class PondCanvas {
   }
 
   private resize(): void {
-    this.canvas.width = window.innerWidth;
-    this.canvas.height = window.innerHeight;
+    const dpr = window.devicePixelRatio || 1;
+    this.canvas.width = window.innerWidth * dpr;
+    this.canvas.height = window.innerHeight * dpr;
+    this.canvas.style.width = window.innerWidth + "px";
+    this.canvas.style.height = window.innerHeight + "px";
+    this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   }
 
   render(): void {

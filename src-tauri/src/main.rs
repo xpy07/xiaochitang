@@ -14,11 +14,12 @@ pub struct AppState {
 
 #[tauri::command]
 fn toggle_interaction(app: AppHandle, state: State<AppState>) -> bool {
-    let new_val = !state.interactive.load(Ordering::Relaxed);
-    state.interactive.store(new_val, Ordering::Relaxed);
+    let new_val = !state.interactive.fetch_xor(true, Ordering::Relaxed);
 
     if let Some(window) = app.get_webview_window("main") {
-        click_through::set_click_through(&window, !new_val);
+        if let Err(e) = click_through::set_click_through(&window, !new_val) {
+            eprintln!("Failed to set click-through: {}", e);
+        }
         let _ = window.emit("interaction-changed", new_val);
     }
 
@@ -37,9 +38,14 @@ fn main() {
             let window = app.get_webview_window("main").expect("no main window");
 
             // start with click-through enabled (non-interactive)
-            click_through::set_click_through(&window, true);
+            if let Err(e) = click_through::set_click_through(&window, true) {
+                eprintln!("Failed to set click-through: {}", e);
+            }
 
-            hotkey::register(&handle)?;
+            if let Err(e) = hotkey::register(&handle) {
+                eprintln!("Failed to register hotkey: {}", e);
+                // Don't abort - continue without hotkey
+            }
             tray::setup(&handle)?;
 
             Ok(())

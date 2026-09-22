@@ -10,7 +10,9 @@ async function toggleInteraction(): Promise<void> {
   document.body.classList.toggle("interactive", interactive);
 }
 
-listen("hotkey-toggle", () => toggleInteraction());
+listen("hotkey-toggle", () => {
+  toggleInteraction().catch(console.error);
+});
 
 function loop(): void {
   pond.render();
