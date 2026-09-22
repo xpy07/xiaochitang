@@ -12,15 +12,16 @@ export class RenderEngine {
   private uniforms: Record<string, WebGLUniformLocation | null> = {};
 
   constructor(canvas: HTMLCanvasElement) {
-    this.gl = canvas.getContext("webgl", {
+    const gl = canvas.getContext("webgl", {
       alpha: true,
       premultipliedAlpha: false,
       antialias: true,
-    })!;
-    if (!this.gl) throw new Error("WebGL not supported");
+    });
+    if (!gl) throw new Error("WebGL not supported");
+    this.gl = gl;
   }
 
-  async init(vertexSrc: string, fragmentSrc: string): Promise<void> {
+  init(vertexSrc: string, fragmentSrc: string): void {
     const gl = this.gl;
     this.program = this.createProgram(vertexSrc, fragmentSrc);
     gl.useProgram(this.program);
@@ -36,13 +37,10 @@ export class RenderEngine {
     gl.vertexAttribPointer(posLoc, 2, gl.FLOAT, false, 0, 0);
 
     // Cache uniform locations
-    const names = ["u_time", "u_resolution", "u_shallowColor", "u_deepColor", "u_waveStrength"];
+    const names = ["u_time", "u_shallowColor", "u_deepColor", "u_waveStrength"];
     for (const name of names) {
       this.uniforms[name] = gl.getUniformLocation(this.program, name);
     }
-
-    gl.enable(gl.BLEND);
-    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
   }
 
   render(uniforms: RenderUniforms, width: number, height: number): void {
@@ -53,7 +51,6 @@ export class RenderEngine {
 
     gl.useProgram(this.program);
     gl.uniform1f(this.uniforms.u_time, uniforms.time);
-    gl.uniform2f(this.uniforms.u_resolution, width, height);
     gl.uniform3f(this.uniforms.u_shallowColor, ...uniforms.shallowColor);
     gl.uniform3f(this.uniforms.u_deepColor, ...uniforms.deepColor);
     gl.uniform1f(this.uniforms.u_waveStrength, uniforms.waveStrength);

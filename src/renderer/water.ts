@@ -19,15 +19,6 @@ export class WaterRenderer {
     this.uniforms.time = timeMs * 0.001; // seconds
   }
 
-  setWaveStrength(s: number): void {
-    this.uniforms.waveStrength = s;
-  }
-
-  setColors(shallow: [number, number, number], deep: [number, number, number]): void {
-    this.uniforms.shallowColor = shallow;
-    this.uniforms.deepColor = deep;
-  }
-
   render(width: number, height: number): void {
     this.engine.render(this.uniforms, width, height);
   }

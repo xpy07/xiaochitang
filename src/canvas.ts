@@ -18,7 +18,7 @@ export class PondCanvas {
     this.scene = new SceneManager();
     this.resize();
     window.addEventListener("resize", () => this.resize());
-    this.engine.init(VERT_SRC, FRAG_SRC).catch(console.error);
+    this.engine.init(VERT_SRC, FRAG_SRC);
   }
 
   private resize(): void {

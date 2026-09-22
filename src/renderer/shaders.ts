@@ -11,7 +11,6 @@ export const FRAG_SRC = `
 precision mediump float;
 varying vec2 v_uv;
 uniform float u_time;
-uniform vec2 u_resolution;
 uniform vec3 u_shallowColor;
 uniform vec3 u_deepColor;
 uniform float u_waveStrength;
@@ -25,7 +24,7 @@ void main() {
   vec2 distortedUV = uv + vec2(wave1, wave2);
 
   // Depth gradient (center = deep, edge = shallow)
-  float depth = 1.0 - length(uv - 0.5) * 1.4;
+  float depth = 1.0 - length(distortedUV - 0.5) * 1.4;
   depth = clamp(depth, 0.0, 1.0);
 
   // Base water color
@@ -38,7 +37,7 @@ void main() {
   color += caustic * 0.08;
 
   // Surface shimmer
-  float shimmer = sin((uv.x + uv.y) * 60.0 + u_time * 3.0) * 0.02;
+  float shimmer = sin((distortedUV.x + distortedUV.y) * 60.0 + u_time * 3.0) * 0.02;
   color += shimmer;
 
   gl_FragColor = vec4(color, 0.85);
