@@ -14,6 +14,12 @@ listen("hotkey-toggle", () => {
   toggleInteraction().catch(console.error);
 });
 
+window.addEventListener("keydown", (e) => {
+  if (e.key === "s" || e.key === "S") {
+    pond.scene.toggleMode();
+  }
+});
+
 function loop(): void {
   pond.render();
   requestAnimationFrame(loop);
