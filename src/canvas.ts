@@ -1,15 +1,57 @@
 import { SceneManager } from "./scene";
 import { RenderEngine } from "./renderer/engine";
 import { WaterRenderer } from "./renderer/water";
+import { FishRenderer } from "./renderer/fish";
 import { VERT_SRC, FRAG_SRC } from "./renderer/shaders";
 import { ColorTint, DayCycleManager } from "./sim/time";
+import { Fish, FishManager } from "./sim/creatures";
 
 const clock = new Date();
+
+export class CreatureLayer {
+  private canvas: HTMLCanvasElement;
+  private ctx: CanvasRenderingContext2D;
+  private mgr = new FishManager();
+  private renderer = new FishRenderer();
+  private lastTime = 0;
+
+  constructor() {
+    this.canvas = document.getElementById("creatures") as HTMLCanvasElement;
+    const ctx = this.canvas.getContext("2d");
+    if (!ctx) throw new Error("2D canvas not supported");
+    this.ctx = ctx;
+  }
+
+  resize(w: number, h: number, dpr: number): void {
+    this.canvas.width = w * dpr;
+    this.canvas.height = h * dpr;
+    this.canvas.style.width = w + "px";
+    this.canvas.style.height = h + "px";
+    this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+
+  addFish(x: number, y: number, name: string): Fish {
+    return this.mgr.addFish(x, y, name);
+  }
+
+  render(timeMs: number, w: number, h: number): void {
+    const dt = this.lastTime
+      ? Math.min((timeMs - this.lastTime) / 1000, 0.1)
+      : 0.016;
+    this.lastTime = timeMs;
+    this.mgr.update(dt, w, h);
+    this.ctx.clearRect(0, 0, w, h);
+    for (const f of this.mgr.fish) {
+      this.renderer.render(this.ctx, f);
+    }
+  }
+}
 
 export class PondCanvas {
   private canvas: HTMLCanvasElement;
   private engine: RenderEngine;
   private water: WaterRenderer;
+  private creatures = new CreatureLayer();
   private dayCycle = new DayCycleManager();
   private logicalW = 0;
   private logicalH = 0;
@@ -28,6 +70,10 @@ export class PondCanvas {
     this.engine.init(VERT_SRC, FRAG_SRC);
   }
 
+  addFish(x: number, y: number, name: string): Fish {
+    return this.creatures.addFish(x, y, name);
+  }
+
   private resize(): void {
     const dpr = window.devicePixelRatio || 1;
     this.logicalW = window.innerWidth;
@@ -36,6 +82,7 @@ export class PondCanvas {
     this.canvas.height = this.logicalH * dpr;
     this.canvas.style.width = this.logicalW + "px";
     this.canvas.style.height = this.logicalH + "px";
+    this.creatures.resize(this.logicalW, this.logicalH, dpr);
   }
 
   render(timeMs: number): void {
@@ -49,5 +96,6 @@ export class PondCanvas {
     this.water.setLighting(this.lightingTint, this.lightingBrightness);
     this.water.update(timeMs);
     this.water.render(this.canvas.width, this.canvas.height);
+    this.creatures.render(timeMs, this.logicalW, this.logicalH);
   }
 }
