@@ -1,89 +1,30 @@
+/* Settings Panel — pond glassmorphism */
 #settings {
   position: fixed;
-  left: 16px;
-  bottom: 16px;
-  width: 240px;
-  padding: 14px 16px;
-  background: rgba(18, 22, 30, 0.94);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 10px;
-  color: #e8eaed;
-  font-family: "Segoe UI", "Microsoft YaHei", sans-serif;
-  font-size: 13px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+  left: 20px;
+  bottom: 20px;
+  width: 280px;
   display: none;
   z-index: 100;
-  pointer-events: auto;
-  user-select: none;
 }
 
 #settings.open {
   display: block;
+  animation: panelSlideUp var(--t-slow) var(--ease-out) forwards;
 }
 
-#settings h3 {
-  margin: 0 0 10px;
-  font-size: 14px;
-  font-weight: 600;
-  color: #9fd3ff;
+#settings .st-body {
+  padding: var(--sp-md) var(--sp-lg) var(--sp-lg);
 }
 
 .st-group {
-  margin-bottom: 10px;
+  margin-bottom: var(--sp-lg);
 }
 
-.st-label {
-  display: block;
-  margin-bottom: 4px;
-  color: #aab3bf;
-  font-size: 12px;
+.st-group:last-of-type {
+  margin-bottom: var(--sp-md);
 }
 
-.st-btns {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-}
-
-.st-btn {
-  padding: 4px 8px;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 4px;
-  background: #0d1117;
-  color: #e8eaed;
-  font-size: 12px;
-  cursor: pointer;
-}
-
-.st-btn:hover {
-  background: #1a2030;
-}
-
-.st-btn.active {
-  background: #2f81f7;
-  border-color: #2f81f7;
-}
-
-.st-btn:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
-.st-actions {
-  margin-top: 8px;
-}
-
-#st-close {
-  width: 100%;
-  padding: 6px 0;
-  border: none;
-  border-radius: 5px;
-  font-size: 12px;
-  cursor: pointer;
-  color: #fff;
-  background: #3a4150;
-}
-
-#st-close:hover {
-  background: #4a5262;
+.st-group .section-label {
+  margin-bottom: var(--sp-sm);
 }

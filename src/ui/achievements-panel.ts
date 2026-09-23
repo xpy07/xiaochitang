@@ -9,7 +9,7 @@ export class AchievementsPanel {
     this.manager = manager;
     this.el = document.createElement("div");
     this.el.id = "achievements-panel";
-    this.el.className = "achievements-panel";
+    this.el.className = "achievements-panel glass-panel";
     document.body.appendChild(this.el);
   }
 
@@ -29,19 +29,24 @@ export class AchievementsPanel {
 
   private render(): void {
     this.el.innerHTML =
-      `<h3>成就</h3><ul>` +
+      `<div class="panel-header"><h3>成就</h3></div><div class="ach-body"><ul>` +
       this.manager.achievements
         .map((a) => {
           const unlocked = this.manager.isUnlocked(a.id);
+          const icon = unlocked ? "⭐" : "🔒";
           return (
             `<li class="${unlocked ? "unlocked" : "locked"}">` +
+            `<div class="ach-icon">${icon}</div>` +
+            `<div class="ach-info">` +
             `<strong>${a.name}</strong>` +
-            `<span>${a.description}</span> ${unlocked ? "✓" : "🔒"}` +
-            (a.rewardName ? `<em>奖励: ${a.rewardName}</em>` : "") +
-            `</li>`
+            `<span class="ach-desc">${a.description}</span>` +
+            (a.rewardName
+              ? `<span class="ach-reward">奖励: ${a.rewardName}</span>`
+              : "") +
+            `</div></li>`
           );
         })
         .join("") +
-      `</ul>`;
+      `</ul></div>`;
   }
 }

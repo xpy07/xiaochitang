@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>小鱼塘</title>
+  <link rel="stylesheet" href="/src/theme.css" />
   <link rel="stylesheet" href="/src/style.css" />
   <link rel="stylesheet" href="/src/editor.css" />
   <link rel="stylesheet" href="/src/settings.css" />
@@ -13,66 +14,92 @@
 <body>
   <canvas id="pond"></canvas>
   <canvas id="creatures"></canvas>
-  <div id="editor">
-    <h3>自定义生物</h3>
-    <label><span>名字</span><input id="ed-name" type="text" value="小金" /></label>
-    <label><span>物种</span>
-      <select id="ed-species">
-        <option value="fish">鱼</option>
-        <option value="frog">青蛙</option>
-        <option value="crab">螃蟹</option>
-        <option value="lobster">龙虾</option>
-        <option value="eel">鳗鱼</option>
-      </select>
-    </label>
-    <label><span>体型</span><input id="ed-size" type="range" min="0.5" max="2" step="0.1" value="1" /></label>
-    <label><span>底色</span><input id="ed-base-color" type="color" value="#FF8C00" /></label>
-    <label><span>花纹</span>
-      <select id="ed-pattern">
-        <option value="solid">纯色</option>
-        <option value="spots">斑点</option>
-        <option value="stripes">条纹</option>
-        <option value="gradient">渐变</option>
-      </select>
-    </label>
-    <label><span>花纹色</span><input id="ed-pattern-color" type="color" value="#FFFFFF" /></label>
-    <canvas id="ed-preview" width="228" height="90"></canvas>
-    <div class="ed-actions">
-      <button id="ed-save">保存并放入池塘</button>
-      <button id="ed-cancel">取消</button>
+
+  <!-- Settings Panel -->
+  <div id="settings" class="glass-panel">
+    <div class="panel-header">
+      <h3>设置</h3>
+      <button id="st-close" class="btn btn-ghost">✕</button>
+    </div>
+    <div class="st-body">
+      <div class="st-group">
+        <span class="section-label">场景模式</span>
+        <div class="btn-grid">
+          <button id="st-mode-pond" class="btn btn-sm active">池塘</button>
+          <button id="st-mode-immersive" class="btn btn-sm">沉浸</button>
+        </div>
+      </div>
+      <div class="st-group">
+        <span class="section-label">池塘形状</span>
+        <div class="btn-grid">
+          <button id="st-shape-circle" class="btn btn-sm active">圆形</button>
+          <button id="st-shape-oval" class="btn btn-sm">椭圆</button>
+          <button id="st-shape-irregular" class="btn btn-sm">不规则</button>
+          <button id="st-shape-rect" class="btn btn-sm">方圆</button>
+        </div>
+      </div>
+      <div class="st-group">
+        <span class="section-label">水色</span>
+        <div class="btn-grid">
+          <button id="st-color-clear" class="swatch-btn active" style="background:linear-gradient(135deg,#1a738a,#0a2a4a);" title="清澈蓝"></button>
+          <button id="st-color-jade" class="swatch-btn" style="background:linear-gradient(135deg,#1a8a5a,#0a3a2a);" title="翡翠绿"></button>
+          <button id="st-color-dusk" class="swatch-btn" style="background:linear-gradient(135deg,#5a3a8a,#2a1a4a);" title="暮色紫"></button>
+          <button id="st-color-deep" class="swatch-btn" style="background:linear-gradient(135deg,#0a5a8a,#0a1a2a);" title="深海蓝"></button>
+        </div>
+      </div>
     </div>
   </div>
-  <div id="settings">
-    <h3>设置</h3>
-    <div class="st-group">
-      <span class="st-label">场景模式</span>
-      <div class="st-btns">
-        <button id="st-mode-pond" class="st-btn active">池塘模式</button>
-        <button id="st-mode-immersive" class="st-btn">沉浸模式</button>
-      </div>
+
+  <!-- Creature Editor -->
+  <div id="editor" class="glass-panel">
+    <div class="panel-header">
+      <h3>自定义生物</h3>
+      <button id="ed-close" class="btn btn-ghost">✕</button>
     </div>
-    <div class="st-group">
-      <span class="st-label">池塘形状</span>
-      <div class="st-btns">
-        <button id="st-shape-circle" class="st-btn active">圆形</button>
-        <button id="st-shape-oval" class="st-btn">椭圆</button>
-        <button id="st-shape-irregular" class="st-btn">不规则</button>
-        <button id="st-shape-rect" class="st-btn">方形圆角</button>
+    <div class="ed-body">
+      <div class="form-row">
+        <label>名字</label>
+        <input id="ed-name" type="text" value="小金" placeholder="输入名字" />
       </div>
-    </div>
-    <div class="st-group">
-      <span class="st-label">水色</span>
-      <div class="st-btns">
-        <button id="st-color-clear" class="st-btn active">清澈蓝</button>
-        <button id="st-color-jade" class="st-btn">翡翠绿</button>
-        <button id="st-color-dusk" class="st-btn">暮色紫</button>
-        <button id="st-color-deep" class="st-btn">深海蓝</button>
+      <div class="form-row">
+        <label>物种</label>
+        <select id="ed-species">
+          <option value="fish">鱼</option>
+          <option value="frog">青蛙</option>
+          <option value="crab">螃蟹</option>
+          <option value="lobster">龙虾</option>
+          <option value="eel">黄鳝</option>
+        </select>
       </div>
-    </div>
-    <div class="st-actions">
-      <button id="st-close">关闭</button>
+      <div class="form-row">
+        <label>体型</label>
+        <input id="ed-size" type="range" min="0.5" max="2" step="0.1" value="1" />
+      </div>
+      <div class="form-row">
+        <label>底色</label>
+        <input id="ed-base-color" type="color" value="#FF8C00" />
+      </div>
+      <div class="form-row">
+        <label>花纹</label>
+        <select id="ed-pattern">
+          <option value="solid">纯色</option>
+          <option value="spots">斑点</option>
+          <option value="stripes">条纹</option>
+          <option value="gradient">渐变</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label>花纹色</label>
+        <input id="ed-pattern-color" type="color" value="#FFFFFF" />
+      </div>
+      <canvas id="ed-preview" class="preview-canvas" width="260" height="100"></canvas>
+      <div class="ed-actions">
+        <button id="ed-save" class="btn btn-primary">放入池塘</button>
+        <button id="ed-cancel" class="btn">取消</button>
+      </div>
     </div>
   </div>
+
   <script type="module" src="/src/main.ts"></script>
 </body>
 </html>

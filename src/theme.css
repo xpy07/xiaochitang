@@ -1,0 +1,367 @@
+/* ============================================
+   小鱼塘 · Pond Design System
+   Glassmorphism + Nature-inspired palette
+   ============================================ */
+
+:root {
+  /* Core palette */
+  --pond-deep: #0a1e2e;
+  --pond-mid: #0f2b3d;
+  --pond-shallow: #1a4a5e;
+  --pond-teal: #2a8a9e;
+  --pond-foam: #5cc4d4;
+
+  /* Accent */
+  --accent-gold: #f0c060;
+  --accent-gold-dim: #c49a3c;
+  --accent-coral: #e8785a;
+  --accent-emerald: #3cb88a;
+
+  /* Glass */
+  --glass-bg: rgba(8, 18, 28, 0.82);
+  --glass-bg-hover: rgba(14, 28, 42, 0.88);
+  --glass-border: rgba(140, 200, 220, 0.18);
+  --glass-border-hover: rgba(140, 200, 220, 0.32);
+  --glass-highlight: rgba(140, 200, 220, 0.08);
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 2px 8px rgba(0, 0, 0, 0.3);
+  --glass-blur: blur(16px);
+
+  /* Text */
+  --text-primary: #e4edf4;
+  --text-secondary: #8eaabb;
+  --text-muted: #5a7a8a;
+  --text-accent: var(--pond-foam);
+  --text-gold: var(--accent-gold);
+
+  /* Spacing */
+  --sp-xs: 4px;
+  --sp-sm: 8px;
+  --sp-md: 14px;
+  --sp-lg: 20px;
+  --sp-xl: 28px;
+
+  /* Radius */
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+  --radius-full: 999px;
+
+  /* Transitions */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --t-fast: 150ms;
+  --t-normal: 250ms;
+  --t-slow: 400ms;
+
+  /* Font */
+  --font-ui: "HarmonyOS Sans SC", "Segoe UI Variable", "Segoe UI", "Microsoft YaHei UI", "Microsoft YaHei", system-ui, sans-serif;
+  --font-mono: "Cascadia Code", "JetBrains Mono", "Consolas", monospace;
+}
+
+/* ---- Glass Panel Base ---- */
+.glass-panel {
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--glass-shadow);
+  color: var(--text-primary);
+  font-family: var(--font-ui);
+  font-size: 13px;
+  line-height: 1.5;
+  overflow: hidden;
+  user-select: none;
+  pointer-events: auto;
+  transition: border-color var(--t-normal) var(--ease-out);
+}
+
+.glass-panel:hover {
+  border-color: var(--glass-border-hover);
+}
+
+/* Panel header with subtle top glow */
+.glass-panel .panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--sp-md) var(--sp-lg);
+  border-bottom: 1px solid var(--glass-border);
+  background: linear-gradient(180deg, var(--glass-highlight) 0%, transparent 100%);
+}
+
+.glass-panel .panel-header h3 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: var(--sp-sm);
+}
+
+.glass-panel .panel-header h3::before {
+  content: "";
+  display: inline-block;
+  width: 3px;
+  height: 16px;
+  background: linear-gradient(180deg, var(--pond-foam), var(--pond-teal));
+  border-radius: 2px;
+}
+
+/* ---- Buttons ---- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-xs);
+  padding: 7px 14px;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-primary);
+  font-family: var(--font-ui);
+  font-size: 12.5px;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    background var(--t-fast) var(--ease-out),
+    border-color var(--t-fast) var(--ease-out),
+    transform var(--t-fast) var(--ease-spring),
+    box-shadow var(--t-fast) var(--ease-out);
+}
+
+.btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: var(--glass-border-hover);
+  transform: translateY(-1px);
+}
+
+.btn:active {
+  transform: translateY(0) scale(0.98);
+}
+
+.btn.active {
+  background: linear-gradient(135deg, rgba(42, 138, 158, 0.35), rgba(92, 196, 212, 0.2));
+  border-color: var(--pond-foam);
+  box-shadow: 0 0 12px rgba(92, 196, 212, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  color: var(--pond-foam);
+}
+
+.btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+/* Primary / Accent button */
+.btn-primary {
+  background: linear-gradient(135deg, var(--pond-teal), var(--pond-foam));
+  border-color: transparent;
+  color: var(--pond-deep);
+  font-weight: 700;
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, var(--pond-foam), var(--pond-teal));
+  box-shadow: 0 4px 16px rgba(42, 138, 158, 0.35);
+}
+
+/* Ghost / Close button */
+.btn-ghost {
+  background: transparent;
+  border-color: transparent;
+  color: var(--text-muted);
+  padding: 4px 8px;
+}
+
+.btn-ghost:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-primary);
+  transform: none;
+}
+
+/* ---- Form Controls ---- */
+.form-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-sm);
+  margin-bottom: var(--sp-md);
+}
+
+.form-row label {
+  flex: 0 0 52px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.form-row input[type="text"],
+.form-row select {
+  flex: 1;
+  min-width: 0;
+  padding: 6px 10px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-family: var(--font-ui);
+  font-size: 12.5px;
+  outline: none;
+  transition: border-color var(--t-fast) var(--ease-out), box-shadow var(--t-fast) var(--ease-out);
+}
+
+.form-row input[type="text"]:focus,
+.form-row select:focus {
+  border-color: var(--pond-foam);
+  box-shadow: 0 0 0 2px rgba(92, 196, 212, 0.15);
+}
+
+.form-row select option {
+  background: var(--pond-deep);
+  color: var(--text-primary);
+}
+
+.form-row input[type="range"] {
+  flex: 1;
+  min-width: 0;
+  -webkit-appearance: none;
+  appearance: none;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+  outline: none;
+}
+
+.form-row input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  background: var(--pond-foam);
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  transition: transform var(--t-fast) var(--ease-spring);
+}
+
+.form-row input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+}
+
+.form-row input[type="color"] {
+  width: 40px;
+  height: 28px;
+  padding: 2px;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  cursor: pointer;
+}
+
+/* ---- Button Grid (shapes, colors) ---- */
+.btn-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-xs);
+}
+
+.btn-sm {
+  padding: 5px 10px;
+  font-size: 12px;
+  border-radius: var(--radius-sm);
+}
+
+/* Color swatch button */
+.swatch-btn {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 2px solid var(--glass-border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition:
+    border-color var(--t-fast) var(--ease-out),
+    transform var(--t-fast) var(--ease-spring),
+    box-shadow var(--t-fast) var(--ease-out);
+}
+
+.swatch-btn:hover {
+  transform: scale(1.1);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.swatch-btn.active {
+  border-color: var(--pond-foam);
+  box-shadow: 0 0 10px rgba(92, 196, 212, 0.3);
+  transform: scale(1.05);
+}
+
+/* ---- Preview Canvas ---- */
+.preview-canvas {
+  display: block;
+  width: 100%;
+  height: 100px;
+  margin: var(--sp-md) 0;
+  background: linear-gradient(180deg, #0a1e2e 0%, #0f2b3d 50%, #1a4a5e 100%);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+/* ---- Section divider ---- */
+.section-label {
+  display: block;
+  margin-bottom: var(--sp-xs);
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+}
+
+/* ---- Scrollbar ---- */
+.glass-panel ::-webkit-scrollbar {
+  width: 5px;
+}
+
+.glass-panel ::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.glass-panel ::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 3px;
+}
+
+.glass-panel ::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* ---- Animations ---- */
+@keyframes panelSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.panel-enter {
+  animation: panelSlideUp var(--t-slow) var(--ease-out) forwards;
+}
