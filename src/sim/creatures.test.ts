@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { Fish, FishManager, LifeStage } from "./creatures";
 
 describe("Fish", () => {
@@ -104,6 +104,103 @@ describe("Fish food-seeking", () => {
     food.nutrition = 1000;
     for (let i = 0; i < 30; i++) fm.update(0.1, 600, 600, [food]);
     expect(food.nutrition).toBeLessThan(1000);
+  });
+});
+
+describe("Fish play reaction", () => {
+  it("moves toward mouse when curious", () => {
+    const fish = new Fish(50, 50, "test");
+    fish.speed = 50;
+    fish.direction = Math.PI / 2;
+    const spy = vi.spyOn(Math, "random").mockReturnValue(0.1);
+    try {
+      fish.update(0.1, 600, 600, undefined, 100, 50, true);
+    } finally {
+      spy.mockRestore();
+    }
+    expect(fish.x).toBeGreaterThan(50);
+  });
+
+  it("flees from mouse when scared", () => {
+    const fish = new Fish(50, 50, "test");
+    fish.speed = 50;
+    fish.direction = Math.PI / 2;
+    const spy = vi.spyOn(Math, "random").mockReturnValue(0.9);
+    try {
+      fish.update(0.1, 600, 600, undefined, 100, 50, true);
+    } finally {
+      spy.mockRestore();
+    }
+    expect(fish.x).toBeLessThan(50);
+  });
+
+  it("ignores play when inactive", () => {
+    const fish = new Fish(50, 50, "test");
+    fish.speed = 50;
+    fish.direction = Math.PI / 2;
+    const spy = vi.spyOn(Math, "random").mockReturnValue(0.9);
+    try {
+      fish.update(0.1, 600, 600, undefined, 100, 50, false);
+    } finally {
+      spy.mockRestore();
+    }
+    expect(fish.x).toBeCloseTo(50);
+    expect(fish.y).toBeGreaterThan(50);
+  });
+
+  it("ignores mouse beyond 100px", () => {
+    const fish = new Fish(50, 50, "test");
+    fish.speed = 50;
+    fish.direction = Math.PI / 2;
+    const spy = vi.spyOn(Math, "random").mockReturnValue(0.1);
+    try {
+      fish.update(0.1, 600, 600, undefined, 300, 50, true);
+    } finally {
+      spy.mockRestore();
+    }
+    expect(fish.x).toBeCloseTo(50);
+    expect(fish.y).toBeGreaterThan(50);
+  });
+
+  it("food takes priority over play", () => {
+    function makeFood(x: number, y: number) {
+      return {
+        x,
+        y,
+        nutrition: 5,
+        consumed: false,
+        eat(amount: number) {
+          this.nutrition -= amount;
+          if (this.nutrition <= 0) this.consumed = true;
+        },
+      };
+    }
+    const fish = new Fish(50, 50, "test");
+    fish.speed = 50;
+    fish.direction = Math.PI / 2;
+    const food = makeFood(100, 50);
+    food.nutrition = 1000;
+    const spy = vi.spyOn(Math, "random").mockReturnValue(0.9);
+    try {
+      fish.update(0.1, 600, 600, [food], 10, 50, true);
+    } finally {
+      spy.mockRestore();
+    }
+    expect(fish.x).toBeGreaterThan(50);
+  });
+
+  it("FishManager passes play position to fish", () => {
+    const fm = new FishManager();
+    const fish = fm.addFish(50, 50, "A");
+    fish.speed = 50;
+    fish.direction = Math.PI / 2;
+    const spy = vi.spyOn(Math, "random").mockReturnValue(0.1);
+    try {
+      fm.update(0.1, 600, 600, undefined, 100, 50, true);
+    } finally {
+      spy.mockRestore();
+    }
+    expect(fish.x).toBeGreaterThan(50);
   });
 });
 

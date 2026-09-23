@@ -32,6 +32,7 @@ async function toggleInteraction(): Promise<void> {
   document.body.classList.toggle("interactive", interactive);
   if (!interactive) {
     cursor.setTool(null);
+    pond.setPlayActive(false);
   }
 }
 
@@ -41,6 +42,13 @@ listen("hotkey-toggle", () => {
 
 window.addEventListener("mousemove", (e) => {
   cursor.updateMouse(e.clientX, e.clientY);
+  if (
+    document.body.classList.contains("interactive") &&
+    cursor.currentTool === InteractionTool.Play
+  ) {
+    pond.setPlayActive(true);
+    pond.moveMouse(e.clientX, e.clientY);
+  }
 });
 
 window.addEventListener("click", (e) => {
@@ -72,6 +80,7 @@ window.addEventListener("keydown", (e) => {
   if (e.key === "Tab") {
     e.preventDefault();
     cursor.cycleTool();
+    pond.setPlayActive(cursor.currentTool === InteractionTool.Play);
   }
 });
 

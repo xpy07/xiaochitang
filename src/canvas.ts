@@ -9,6 +9,8 @@ import { Fish, FishManager } from "./sim/creatures";
 import { FoodManager } from "./sim/feeding";
 import { DecorationManager, DecorationType } from "./sim/decor";
 import { DecorRenderer } from "./renderer/decor";
+import { PlayManager } from "./sim/play";
+import { RippleRenderer } from "./renderer/ripple";
 
 const clock = new Date();
 
@@ -18,8 +20,10 @@ export class CreatureLayer {
   private mgr = new FishManager();
   private foods = new FoodManager();
   private decorMgr = new DecorationManager();
+  private play = new PlayManager();
   private renderer = new FishRenderer();
   private decorRenderer = new DecorRenderer();
+  private rippleRenderer = new RippleRenderer();
   private weather: WeatherRenderer | null = null;
   private lastTime = 0;
 
@@ -55,6 +59,14 @@ export class CreatureLayer {
     if (d) this.decorMgr.remove(d.id);
   }
 
+  moveMouse(x: number, y: number): void {
+    this.play.moveMouse(x, y);
+  }
+
+  setPlayActive(active: boolean): void {
+    this.play.active = active;
+  }
+
   setWeather(w: WeatherRenderer): void {
     this.weather = w;
   }
@@ -65,7 +77,16 @@ export class CreatureLayer {
       : 0.016;
     this.lastTime = timeMs;
     this.foods.update(dt, h);
-    this.mgr.update(dt, w, h, this.foods.foods);
+    this.play.update(dt);
+    this.mgr.update(
+      dt,
+      w,
+      h,
+      this.foods.foods,
+      this.play.mouseX,
+      this.play.mouseY,
+      this.play.active,
+    );
     this.ctx.clearRect(0, 0, w, h);
     for (const d of this.decorMgr.decorations) {
       this.decorRenderer.render(this.ctx, d);
@@ -79,6 +100,7 @@ export class CreatureLayer {
     for (const f of this.mgr.fish) {
       this.renderer.render(this.ctx, f);
     }
+    this.rippleRenderer.render(this.ctx, this.play.ripples);
     if (this.weather) {
       this.weather.update(dt, w, h);
       this.weather.render(this.ctx, w, h);
@@ -123,6 +145,14 @@ export class PondCanvas {
 
   removeDecorationAt(x: number, y: number): void {
     this.creatures.removeDecorationAt(x, y);
+  }
+
+  moveMouse(x: number, y: number): void {
+    this.creatures.moveMouse(x, y);
+  }
+
+  setPlayActive(active: boolean): void {
+    this.creatures.setPlayActive(active);
   }
 
   setWeather(w: WeatherRenderer): void {

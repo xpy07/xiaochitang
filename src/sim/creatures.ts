@@ -14,6 +14,7 @@ export interface FoodTarget {
 
 const ATTRACT_RANGE = 150;
 const EAT_RANGE = 10;
+const PLAY_RANGE = 100;
 
 export class Fish {
   x: number;
@@ -67,10 +68,13 @@ export class Fish {
     boundsW: number,
     boundsH: number,
     foods?: FoodTarget[],
+    playX?: number,
+    playY?: number,
+    playActive?: boolean,
   ): void {
     this.grow(dt * 60);
     this.advanceAge(dt * 60);
-    this.update(dt, boundsW, boundsH, foods);
+    this.update(dt, boundsW, boundsH, foods, playX, playY, playActive);
   }
 
   update(
@@ -78,6 +82,9 @@ export class Fish {
     boundsW: number,
     boundsH: number,
     foods?: FoodTarget[],
+    playX?: number,
+    playY?: number,
+    playActive?: boolean,
   ): void {
     if (!this.alive) return;
     let target: FoodTarget | null = null;
@@ -96,6 +103,17 @@ export class Fish {
       this.direction = Math.atan2(target.y - this.y, target.x - this.x);
       if (bestDist < EAT_RANGE) {
         target.eat(1);
+      }
+    } else if (
+      playActive &&
+      playX !== undefined &&
+      playY !== undefined &&
+      Math.hypot(playX - this.x, playY - this.y) < PLAY_RANGE
+    ) {
+      if (Math.random() < 0.5) {
+        this.direction = Math.atan2(playY - this.y, playX - this.x);
+      } else {
+        this.direction = Math.atan2(this.y - playY, this.x - playX);
       }
     } else if (Math.random() < 0.02) {
       this.direction += (Math.random() - 0.5) * 1.5;
@@ -135,9 +153,12 @@ export class FishManager {
     boundsW: number,
     boundsH: number,
     foods?: FoodTarget[],
+    playX?: number,
+    playY?: number,
+    playActive?: boolean,
   ): void {
     for (const f of this.fish) {
-      f.tick(dt, boundsW, boundsH, foods);
+      f.tick(dt, boundsW, boundsH, foods, playX, playY, playActive);
     }
     this.fish = this.fish.filter((f) => f.alive);
   }
