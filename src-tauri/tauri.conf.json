@@ -30,5 +30,13 @@
     "active": true,
     "targets": ["msi", "nsis"],
     "icon": ["icons/icon.png", "icons/icon.ico"]
+  },
+  "plugins": {
+    "updater": {
+      "endpoints": [
+        "https://raw.githubusercontent.com/USER/fishpond/main/update.json"
+      ],
+      "dialog": true
+    }
   }
 }

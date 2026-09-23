@@ -1,0 +1,11 @@
+{
+  "version": "0.1.0",
+  "notes": "首个版本：鱼塘模拟、天气光影、自定义生物",
+  "pub_date": "2026-09-23T00:00:00Z",
+  "platforms": {
+    "windows-x86_64": {
+      "signature": "",
+      "url": "https://github.com/USER/fishpond/releases/download/v0.1.0/fishpond_0.1.0_x64-setup.exe"
+    }
+  }
+}

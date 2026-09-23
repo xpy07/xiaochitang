@@ -1,5 +1,6 @@
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
+import { check } from "@tauri-apps/plugin-updater";
 import { PondCanvas } from "./canvas";
 import { CursorManager, InteractionTool } from "./cursor";
 import { WeatherManager } from "./sim/weather";
@@ -186,3 +187,18 @@ function loop(timeMs: number): void {
 }
 
 requestAnimationFrame(loop);
+
+async function checkForUpdates(): Promise<void> {
+  try {
+    const update = await check();
+    if (update) {
+      // Show notification via tray or console
+      console.log(`Update available: ${update.version}`);
+    }
+  } catch (e) {
+    console.log("Update check skipped:", e);
+  }
+}
+
+// Call on startup after a short delay
+setTimeout(checkForUpdates, 5000);

@@ -43,6 +43,7 @@ fn toggle_interaction(app: AppHandle, state: State<AppState>) -> bool {
 fn main() {
     tauri::Builder::default()
         .plugin(tauri_plugin_global_shortcut::Builder::new().build())
+        .plugin(tauri_plugin_updater::Builder::new().build())
         .manage(AppState {
             interactive: AtomicBool::new(false),
         })
