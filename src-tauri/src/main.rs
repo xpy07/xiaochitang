@@ -7,6 +7,7 @@ mod tray;
 
 use std::sync::atomic::{AtomicBool, Ordering};
 use tauri::{AppHandle, Emitter, Manager, State};
+use tauri_plugin_autostart::ManagerExt;
 use windows::core::w;
 use windows::Win32::Foundation::{LPARAM, POINT, WPARAM, HWND};
 use windows::Win32::UI::Controls::{LVM_GETITEMCOUNT, LVM_GETITEMPOSITION};
@@ -92,14 +93,36 @@ fn toggle_interaction(app: AppHandle, state: State<AppState>) -> bool {
     new_val
 }
 
+#[tauri::command]
+async fn set_autostart(app: AppHandle, enable: bool) -> Result<(), String> {
+    let autostart = app.autolaunch();
+    if enable {
+        autostart.enable().map_err(|e| e.to_string())?;
+    } else {
+        autostart.disable().map_err(|e| e.to_string())?;
+    }
+    Ok(())
+}
+
+#[tauri::command]
+fn get_autostart(app: AppHandle) -> bool {
+    app.autolaunch().is_enabled().unwrap_or(false)
+}
+
 fn main() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_autostart::Builder::new().build())
         .plugin(tauri_plugin_global_shortcut::Builder::new().build())
         .plugin(tauri_plugin_updater::Builder::new().build())
         .manage(AppState {
             interactive: AtomicBool::new(false),
         })
-        .invoke_handler(tauri::generate_handler![toggle_interaction, get_desktop_icons])
+        .invoke_handler(tauri::generate_handler![
+            toggle_interaction,
+            get_desktop_icons,
+            set_autostart,
+            get_autostart
+        ])
         .setup(|app| {
             let handle = app.handle().clone();
             let window = app.get_webview_window("main").expect("no main window");
