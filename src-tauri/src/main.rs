@@ -11,7 +11,7 @@ use tauri_plugin_autostart::ManagerExt;
 use windows::core::w;
 use windows::Win32::Foundation::{LPARAM, POINT, WPARAM, HWND};
 use windows::Win32::UI::Controls::{LVM_GETITEMCOUNT, LVM_GETITEMPOSITION};
-use windows::Win32::UI::WindowsAndMessaging::{FindWindowW, FindWindowExW, SendMessageW};
+use windows::Win32::UI::WindowsAndMessaging::{FindWindowW, FindWindowExW, SendMessageW, SetParent, SetWindowPos, HWND_BOTTOM, SWP_NOACTIVATE, SWP_NOMOVE, SWP_NOSIZE, SWP_SHOWWINDOW};
 
 pub struct AppState {
     pub interactive: AtomicBool,
@@ -47,6 +47,47 @@ unsafe fn find_desktop_listview() -> Option<HWND> {
     }
 
     None
+}
+
+fn setup_wallpaper_layer(window: &tauri::WebviewWindow) {
+    unsafe {
+        let hwnd = window.hwnd().map_err(|e| e.to_string()).unwrap();
+        let hwnd = HWND(hwnd.0);
+
+        // Tell Progman to spawn a WorkerW behind wallpaper
+        if let Ok(progman) = FindWindowW(w!("Progman"), None) {
+            SendMessageW(progman, 0x052C, WPARAM(0), LPARAM(0));
+        }
+
+        // Find the WorkerW that sits behind desktop icons
+        let mut prev = HWND::default();
+        let mut target_workerw = HWND::default();
+        while let Ok(workerw) = FindWindowExW(HWND::default(), prev, w!("WorkerW"), None) {
+            if let Ok(defview) = FindWindowExW(workerw, HWND::default(), w!("SHELLDLL_DefView"), None) {
+                if !defview.is_invalid() {
+                    target_workerw = workerw;
+                }
+            }
+            prev = workerw;
+        }
+
+        if target_workerw.is_invalid() {
+            target_workerw = FindWindowW(w!("WorkerW"), None).unwrap_or(HWND::default());
+        }
+
+        if !target_workerw.is_invalid() {
+            SetParent(hwnd, target_workerw);
+            SetWindowPos(
+                hwnd,
+                HWND_BOTTOM,
+                0,
+                0,
+                0,
+                0,
+                SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_SHOWWINDOW,
+            );
+        }
+    }
 }
 
 #[tauri::command]
@@ -127,14 +168,16 @@ fn main() {
             let handle = app.handle().clone();
             let window = app.get_webview_window("main").expect("no main window");
 
-            // start with click-through enabled (non-interactive)
+            // Set wallpaper layer (WorkerW) — must happen after window creation
+            setup_wallpaper_layer(&window);
+
+            // Start with click-through enabled (non-interactive)
             if let Err(e) = click_through::set_click_through(&window, true) {
                 eprintln!("Failed to set click-through: {}", e);
             }
 
             if let Err(e) = hotkey::register(&handle) {
                 eprintln!("Failed to register hotkey: {}", e);
-                // Don't abort - continue without hotkey
             }
             tray::setup(&handle)?;
 

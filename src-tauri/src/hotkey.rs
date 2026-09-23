@@ -10,5 +10,16 @@ pub fn register(app: &AppHandle) -> Result<(), Box<dyn std::error::Error>> {
             }
         },
     )?;
+
+    // Emergency quit: Ctrl+Alt+Q
+    app.global_shortcut().on_shortcut(
+        "CmdOrCtrl+Alt+Q",
+        |app, _shortcut, event| {
+            if event.state == ShortcutState::Pressed {
+                app.exit(0);
+            }
+        },
+    )?;
+
     Ok(())
 }

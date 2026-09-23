@@ -14,7 +14,7 @@
       {
         "label": "main",
         "title": "小鱼塘",
-        "fullscreen": true,
+        "maximized": true,
         "decorations": false,
         "transparent": true,
         "alwaysOnBottom": true,
