@@ -6,11 +6,11 @@ export class DecorRenderer {
     ctx.translate(d.x, d.y);
     switch (d.type) {
       case DecorationType.Rock:
-        ctx.fillStyle = "#666";
+        ctx.fillStyle = d.tint;
         ctx.beginPath();
         ctx.ellipse(0, 0, d.width / 2, d.height / 2, 0, 0, Math.PI * 2);
         ctx.fill();
-        ctx.fillStyle = "#777";
+        ctx.fillStyle = "rgba(255,255,255,0.2)";
         ctx.beginPath();
         ctx.ellipse(-3, -3, d.width / 3, d.height / 3, 0, 0, Math.PI * 2);
         ctx.fill();
@@ -32,7 +32,7 @@ export class DecorRenderer {
         ctx.fill();
         break;
       case DecorationType.Stone:
-        ctx.fillStyle = "#888";
+        ctx.fillStyle = d.tint;
         ctx.beginPath();
         ctx.arc(0, 0, d.radius, 0, Math.PI * 2);
         ctx.fill();

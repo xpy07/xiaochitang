@@ -67,10 +67,23 @@ describe("AchievementManager", () => {
     expect(unlocked!.id).toBe("feed_100");
   });
 
-  it("unlocks rare creature reward", () => {
+  it("returns 锦鲤 for feed_100", () => {
     const am = new AchievementManager();
-    for (let i = 0; i < 100; i++) am.recordFeed();
-    const reward = am.getReward("feed_100");
-    expect(reward).toBeTruthy();
+    expect(am.getReward("feed_100")).toBe("锦鲤");
+  });
+
+  it("returns 金石 for feed_500", () => {
+    const am = new AchievementManager();
+    expect(am.getReward("feed_500")).toBe("金石");
+  });
+
+  it("returns 金蛙 for days_30", () => {
+    const am = new AchievementManager();
+    expect(am.getReward("days_30")).toBe("金蛙");
+  });
+
+  it("returns 珊瑚 for adult_15", () => {
+    const am = new AchievementManager();
+    expect(am.getReward("adult_15")).toBe("珊瑚");
   });
 });

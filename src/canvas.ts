@@ -63,8 +63,8 @@ export class CreatureLayer {
     this.foods.drop(x, y);
   }
 
-  placeDecoration(x: number, y: number, type: DecorationType): void {
-    this.decorMgr.place(x, y, type);
+  placeDecoration(x: number, y: number, type: DecorationType, tint?: string): void {
+    this.decorMgr.place(x, y, type, tint);
   }
 
   removeDecorationAt(x: number, y: number): void {
@@ -183,8 +183,8 @@ export class PondCanvas {
     this.creatures.dropFood(x, y);
   }
 
-  placeDecoration(x: number, y: number, type: DecorationType): void {
-    this.creatures.placeDecoration(x, y, type);
+  placeDecoration(x: number, y: number, type: DecorationType, tint?: string): void {
+    this.creatures.placeDecoration(x, y, type, tint);
   }
 
   removeDecorationAt(x: number, y: number): void {

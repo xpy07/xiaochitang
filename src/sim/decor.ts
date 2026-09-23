@@ -15,11 +15,13 @@ export class Decoration {
   width: number;
   height: number;
   radius: number;
+  tint: string = "#888";
 
-  constructor(x: number, y: number, type: DecorationType) {
+  constructor(x: number, y: number, type: DecorationType, tint: string = "#888") {
     this.x = x;
     this.y = y;
     this.type = type;
+    this.tint = tint;
     switch (type) {
       case DecorationType.Rock:
         this.width = 40; this.height = 30; this.radius = 20;
@@ -46,8 +48,8 @@ export class Decoration {
 export class DecorationManager {
   decorations: Decoration[] = [];
 
-  place(x: number, y: number, type: DecorationType): Decoration {
-    const d = new Decoration(x, y, type);
+  place(x: number, y: number, type: DecorationType, tint?: string): Decoration {
+    const d = new Decoration(x, y, type, tint);
     this.decorations.push(d);
     return d;
   }

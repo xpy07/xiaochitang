@@ -26,6 +26,16 @@ describe("Decoration", () => {
     const lotus = new Decoration(0, 0, DecorationType.Lotus);
     expect(lotus.radius).toBeGreaterThan(0);
   });
+
+  it("defaults tint to #888", () => {
+    const d = new Decoration(0, 0, DecorationType.Stone);
+    expect(d.tint).toBe("#888");
+  });
+
+  it("accepts custom tint", () => {
+    const d = new Decoration(0, 0, DecorationType.Stone, "#e6bf33");
+    expect(d.tint).toBe("#e6bf33");
+  });
 });
 
 describe("DecorationManager", () => {
@@ -62,5 +72,11 @@ describe("DecorationManager", () => {
     expect(dm.count).toBe(0);
     dm.place(50, 50, DecorationType.Rock);
     expect(dm.count).toBe(1);
+  });
+
+  it("places with custom tint", () => {
+    const dm = new DecorationManager();
+    const d = dm.place(50, 50, DecorationType.Stone, "#e6bf33");
+    expect(d.tint).toBe("#e6bf33");
   });
 });

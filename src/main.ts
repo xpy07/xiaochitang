@@ -25,7 +25,27 @@ achievements.load();
 const toast = new AchievementToast();
 
 function showUnlock(a: Achievement | null): void {
-  if (a) toast.show(a);
+  if (!a) return;
+  toast.show(a);
+  if (a.rewardType === "creature") {
+    const p = spawnPos();
+    if (a.rewardName === "锦鲤") {
+      const c = pond.addCreature(CreatureSpecies.Fish, p.x, p.y, "锦鲤");
+      c.color = [0.9, 0.75, 0.2];
+      c.size *= 1.5;
+      c.adultSize *= 1.5;
+    } else if (a.rewardName === "金蛙") {
+      const c = pond.addCreature(CreatureSpecies.Frog, p.x, p.y, "金蛙");
+      c.color = [0.85, 0.7, 0.15];
+    }
+  } else if (a.rewardType === "decor") {
+    const p = spawnPos();
+    if (a.rewardName === "金石") {
+      pond.placeDecoration(p.x, p.y, DecorationType.Stone, "#e6bf33");
+    } else if (a.rewardName === "珊瑚") {
+      pond.placeDecoration(p.x, p.y, DecorationType.Rock);
+    }
+  }
 }
 
 pond.setOnEaten(() => showUnlock(achievements.recordFeed()));
