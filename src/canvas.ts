@@ -7,6 +7,8 @@ import { VERT_SRC, FRAG_SRC } from "./renderer/shaders";
 import { ColorTint, DayCycleManager } from "./sim/time";
 import { Fish, FishManager } from "./sim/creatures";
 import { FoodManager } from "./sim/feeding";
+import { DecorationManager, DecorationType } from "./sim/decor";
+import { DecorRenderer } from "./renderer/decor";
 
 const clock = new Date();
 
@@ -15,7 +17,9 @@ export class CreatureLayer {
   private ctx: CanvasRenderingContext2D;
   private mgr = new FishManager();
   private foods = new FoodManager();
+  private decorMgr = new DecorationManager();
   private renderer = new FishRenderer();
+  private decorRenderer = new DecorRenderer();
   private weather: WeatherRenderer | null = null;
   private lastTime = 0;
 
@@ -42,6 +46,15 @@ export class CreatureLayer {
     this.foods.drop(x, y);
   }
 
+  placeDecoration(x: number, y: number, type: DecorationType): void {
+    this.decorMgr.place(x, y, type);
+  }
+
+  removeDecorationAt(x: number, y: number): void {
+    const d = this.decorMgr.getAt(x, y);
+    if (d) this.decorMgr.remove(d.id);
+  }
+
   setWeather(w: WeatherRenderer): void {
     this.weather = w;
   }
@@ -54,6 +67,9 @@ export class CreatureLayer {
     this.foods.update(dt, h);
     this.mgr.update(dt, w, h, this.foods.foods);
     this.ctx.clearRect(0, 0, w, h);
+    for (const d of this.decorMgr.decorations) {
+      this.decorRenderer.render(this.ctx, d);
+    }
     this.ctx.fillStyle = "#8b5a2b";
     for (const f of this.foods.foods) {
       this.ctx.beginPath();
@@ -99,6 +115,14 @@ export class PondCanvas {
 
   dropFood(x: number, y: number): void {
     this.creatures.dropFood(x, y);
+  }
+
+  placeDecoration(x: number, y: number, type: DecorationType): void {
+    this.creatures.placeDecoration(x, y, type);
+  }
+
+  removeDecorationAt(x: number, y: number): void {
+    this.creatures.removeDecorationAt(x, y);
   }
 
   setWeather(w: WeatherRenderer): void {

@@ -4,6 +4,7 @@ import { PondCanvas } from "./canvas";
 import { CursorManager, InteractionTool } from "./cursor";
 import { WeatherManager } from "./sim/weather";
 import { WeatherRenderer } from "./renderer/weather";
+import { DecorationType } from "./sim/decor";
 
 const pond = new PondCanvas();
 const cursor = new CursorManager();
@@ -46,6 +47,19 @@ window.addEventListener("click", (e) => {
   if (!document.body.classList.contains("interactive")) return;
   if (cursor.currentTool === InteractionTool.Feed) {
     pond.dropFood(e.clientX, e.clientY);
+  }
+  if (cursor.currentTool === InteractionTool.Place) {
+    const types = Object.values(DecorationType);
+    const type = types[Math.floor(Math.random() * types.length)];
+    pond.placeDecoration(e.clientX, e.clientY, type);
+  }
+});
+
+window.addEventListener("contextmenu", (e) => {
+  if (!document.body.classList.contains("interactive")) return;
+  if (cursor.currentTool === InteractionTool.Place) {
+    e.preventDefault();
+    pond.removeDecorationAt(e.clientX, e.clientY);
   }
 });
 
