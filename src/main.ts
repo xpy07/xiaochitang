@@ -13,6 +13,7 @@ import { SettingsPanel } from "./ui/settings";
 import { IconRect } from "./sim/icons";
 import { AchievementManager, Achievement } from "./sim/achievements";
 import { AchievementToast } from "./ui/achievements";
+import { AchievementsPanel } from "./ui/achievements-panel";
 
 const pond = new PondCanvas();
 const cursor = new CursorManager();
@@ -23,6 +24,7 @@ pond.setWeather(weatherRenderer);
 const achievements = new AchievementManager();
 achievements.load();
 const toast = new AchievementToast();
+const achievementsPanel = new AchievementsPanel(achievements);
 
 function showUnlock(a: Achievement | null): void {
   if (!a) return;
@@ -139,6 +141,19 @@ listen("hotkey-toggle", () => {
   toggleInteraction().catch(console.error);
 });
 
+listen("open-settings", () => {
+  settings.toggle();
+  settings.syncState(pond.scene.mode, pond.scene.pondShape);
+});
+
+listen("open-achievements", () => {
+  achievementsPanel.toggle();
+});
+
+listen("check-updates", () => {
+  checkForUpdates();
+});
+
 window.addEventListener("mousemove", (e) => {
   cursor.updateMouse(e.clientX, e.clientY);
   if (
@@ -154,6 +169,7 @@ window.addEventListener("click", (e) => {
   if (!document.body.classList.contains("interactive")) return;
   if ((e.target as HTMLElement).closest?.("#editor")) return;
   if ((e.target as HTMLElement).closest?.("#settings")) return;
+  if ((e.target as HTMLElement).closest?.("#achievements-panel")) return;
   if (cursor.currentTool === InteractionTool.Feed) {
     pond.dropFood(e.clientX, e.clientY);
   }
@@ -177,6 +193,7 @@ window.addEventListener("keydown", (e) => {
   if (e.key === "Escape") {
     editor.close();
     settings.close();
+    achievementsPanel.close();
     return;
   }
   const tag = (e.target as HTMLElement)?.tagName;
@@ -212,8 +229,9 @@ async function checkForUpdates(): Promise<void> {
   try {
     const update = await check();
     if (update) {
-      // Show notification via tray or console
       console.log(`Update available: ${update.version}`);
+    } else {
+      console.log("Already up to date");
     }
   } catch (e) {
     console.log("Update check skipped:", e);
