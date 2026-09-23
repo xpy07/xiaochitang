@@ -5,10 +5,40 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>小鱼塘</title>
   <link rel="stylesheet" href="/src/style.css" />
+  <link rel="stylesheet" href="/src/editor.css" />
 </head>
 <body>
   <canvas id="pond"></canvas>
   <canvas id="creatures"></canvas>
+  <div id="editor">
+    <h3>自定义生物</h3>
+    <label><span>名字</span><input id="ed-name" type="text" value="小金" /></label>
+    <label><span>物种</span>
+      <select id="ed-species">
+        <option value="fish">鱼</option>
+        <option value="frog">青蛙</option>
+        <option value="crab">螃蟹</option>
+        <option value="lobster">龙虾</option>
+        <option value="eel">鳗鱼</option>
+      </select>
+    </label>
+    <label><span>体型</span><input id="ed-size" type="range" min="0.5" max="2" step="0.1" value="1" /></label>
+    <label><span>底色</span><input id="ed-base-color" type="color" value="#FF8C00" /></label>
+    <label><span>花纹</span>
+      <select id="ed-pattern">
+        <option value="solid">纯色</option>
+        <option value="spots">斑点</option>
+        <option value="stripes">条纹</option>
+        <option value="gradient">渐变</option>
+      </select>
+    </label>
+    <label><span>花纹色</span><input id="ed-pattern-color" type="color" value="#FFFFFF" /></label>
+    <canvas id="ed-preview" width="228" height="90"></canvas>
+    <div class="ed-actions">
+      <button id="ed-save">保存并放入池塘</button>
+      <button id="ed-cancel">取消</button>
+    </div>
+  </div>
   <script type="module" src="/src/main.ts"></script>
 </body>
 </html>

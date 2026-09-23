@@ -45,6 +45,8 @@ export class Fish {
   color: [number, number, number] = [0.9, 0.5, 0.3];
   species: CreatureSpecies = CreatureSpecies.Fish;
   movementType: MovementType = "swim";
+  patternType: string = "solid";
+  patternColor: [number, number, number] = [1, 1, 1];
   isTadpole: boolean = false;
   phase: number = 0;
 

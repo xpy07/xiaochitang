@@ -7,7 +7,16 @@ export class FishRenderer {
     ctx.rotate(fish.direction);
 
     const s = fish.size;
-    ctx.fillStyle = `rgb(${fish.color[0] * 255}, ${fish.color[1] * 255}, ${fish.color[2] * 255})`;
+    const base = `rgb(${fish.color[0] * 255}, ${fish.color[1] * 255}, ${fish.color[2] * 255})`;
+    const pat = `rgb(${fish.patternColor[0] * 255}, ${fish.patternColor[1] * 255}, ${fish.patternColor[2] * 255})`;
+    if (fish.patternType === "gradient") {
+      const g = ctx.createLinearGradient(-s * 2, -s, s * 2, s);
+      g.addColorStop(0, base);
+      g.addColorStop(1, pat);
+      ctx.fillStyle = g;
+    } else {
+      ctx.fillStyle = base;
+    }
 
     if (fish.isTadpole) {
       this.drawTadpole(ctx, s);
@@ -28,6 +37,10 @@ export class FishRenderer {
         default:
           this.drawFish(ctx, s);
       }
+    }
+
+    if (fish.patternType === "spots" || fish.patternType === "stripes") {
+      this.drawPattern(ctx, fish.patternType, pat, s);
     }
 
     ctx.restore();
@@ -57,6 +70,26 @@ export class FishRenderer {
     ctx.moveTo(-s * 0.8, 0);
     ctx.quadraticCurveTo(-s * 1.5, s * 0.3, -s * 2.2, 0);
     ctx.stroke();
+  }
+
+  private drawPattern(ctx: CanvasRenderingContext2D, type: string, patColor: string, s: number): void {
+    ctx.fillStyle = patColor;
+    ctx.strokeStyle = patColor;
+    if (type === "spots") {
+      ctx.beginPath();
+      ctx.arc(-s * 0.4, -s * 0.3, s * 0.25, 0, Math.PI * 2);
+      ctx.arc(s * 0.3, s * 0.2, s * 0.3, 0, Math.PI * 2);
+      ctx.arc(s * 0.1, -s * 0.4, s * 0.2, 0, Math.PI * 2);
+      ctx.fill();
+    } else {
+      ctx.lineWidth = Math.max(1, s * 0.25);
+      for (let i = -1; i <= 1; i++) {
+        ctx.beginPath();
+        ctx.moveTo(i * s * 0.6, -s * 0.8);
+        ctx.lineTo(i * s * 0.6, s * 0.8);
+        ctx.stroke();
+      }
+    }
   }
 
   private drawFrog(ctx: CanvasRenderingContext2D, s: number): void {

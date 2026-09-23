@@ -51,6 +51,10 @@ export class CreatureLayer {
     return c;
   }
 
+  addFish(f: Fish): void {
+    this.mgr.fish.push(f);
+  }
+
   dropFood(x: number, y: number): void {
     this.foods.drop(x, y);
   }
@@ -155,6 +159,10 @@ export class PondCanvas {
 
   addCreature(species: CreatureSpecies, x: number, y: number, name: string): Fish {
     return this.creatures.addCreature(species, x, y, name);
+  }
+
+  addFish(f: Fish): void {
+    this.creatures.addFish(f);
   }
 
   dropFood(x: number, y: number): void {

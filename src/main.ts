@@ -6,6 +6,8 @@ import { WeatherManager } from "./sim/weather";
 import { WeatherRenderer } from "./renderer/weather";
 import { DecorationType } from "./sim/decor";
 import { CreatureSpecies } from "./sim/species";
+import { CustomCreatureManager, createCreatureFromConfig } from "./sim/custom";
+import { CreatureEditor } from "./ui/editor";
 import { IconRect } from "./sim/icons";
 
 const pond = new PondCanvas();
@@ -46,6 +48,28 @@ pond.addCreature(CreatureSpecies.Lobster, window.innerWidth * 0.6, window.innerH
 pond.addCreature(CreatureSpecies.Eel, window.innerWidth * 0.45, window.innerHeight * 0.5, "Slither");
 pond.addCreature(CreatureSpecies.Eel, window.innerWidth * 0.7, window.innerHeight * 0.4, "Zap");
 
+function spawnPos(): { x: number; y: number } {
+  return {
+    x: window.innerWidth * (0.25 + Math.random() * 0.5),
+    y: window.innerHeight * (0.25 + Math.random() * 0.5),
+  };
+}
+
+const customMgr = new CustomCreatureManager();
+customMgr.load();
+for (const cfg of customMgr.configs) {
+  const p = spawnPos();
+  pond.addFish(createCreatureFromConfig(cfg, p.x, p.y));
+}
+
+const editor = new CreatureEditor({
+  onSaveSpawn: (config) => {
+    customMgr.save(config);
+    const p = spawnPos();
+    pond.addFish(createCreatureFromConfig(config, p.x, p.y));
+  },
+});
+
 async function toggleInteraction(): Promise<void> {
   const interactive = await invoke<boolean>("toggle_interaction");
   document.body.classList.toggle("interactive", interactive);
@@ -72,6 +96,7 @@ window.addEventListener("mousemove", (e) => {
 
 window.addEventListener("click", (e) => {
   if (!document.body.classList.contains("interactive")) return;
+  if ((e.target as HTMLElement).closest?.("#editor")) return;
   if (cursor.currentTool === InteractionTool.Feed) {
     pond.dropFood(e.clientX, e.clientY);
   }
@@ -92,9 +117,18 @@ window.addEventListener("contextmenu", (e) => {
 
 window.addEventListener("keydown", (e) => {
   if (e.repeat) return;
+  if (e.key === "Escape") {
+    editor.close();
+    return;
+  }
+  const tag = (e.target as HTMLElement)?.tagName;
+  if (tag === "INPUT" || tag === "SELECT" || tag === "TEXTAREA") return;
   if (!document.body.classList.contains("interactive")) return;
   if (e.key === "s" || e.key === "S") {
     pond.scene.toggleMode();
+  }
+  if (e.key === "e" || e.key === "E") {
+    editor.toggle();
   }
   if (e.key === "Tab") {
     e.preventDefault();
