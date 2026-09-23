@@ -5,7 +5,7 @@
   "platforms": {
     "windows-x86_64": {
       "signature": "",
-      "url": "https://github.com/USER/fishpond/releases/download/v0.1.0/fishpond_0.1.0_x64-setup.exe"
+      "url": "https://github.com/xpy07/xiaochitang/releases/download/v0.1.0/fishpond_0.1.0_x64-setup.exe"
     }
   }
 }

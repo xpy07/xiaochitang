@@ -45,7 +45,7 @@
   "plugins": {
     "updater": {
       "endpoints": [
-        "https://raw.githubusercontent.com/USER/fishpond/main/update.json"
+        "https://raw.githubusercontent.com/xpy07/xiaochitang/main/update.json"
       ],
       "dialog": true
     }
