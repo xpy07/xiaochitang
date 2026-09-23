@@ -5,6 +5,7 @@ import { CursorManager, InteractionTool } from "./cursor";
 import { WeatherManager } from "./sim/weather";
 import { WeatherRenderer } from "./renderer/weather";
 import { DecorationType } from "./sim/decor";
+import { CreatureSpecies } from "./sim/species";
 import { IconRect } from "./sim/icons";
 
 const pond = new PondCanvas();
@@ -33,10 +34,17 @@ setInterval(() => {
   refreshIcons().catch(console.error);
 }, 2000);
 
-pond.addFish(window.innerWidth * 0.3, window.innerHeight * 0.3, "Nemo");
-pond.addFish(window.innerWidth * 0.5, window.innerHeight * 0.45, "Dory");
-pond.addFish(window.innerWidth * 0.65, window.innerHeight * 0.55, "Bubbles");
-pond.addFish(window.innerWidth * 0.4, window.innerHeight * 0.7, "Splash");
+pond.addCreature(CreatureSpecies.Fish, window.innerWidth * 0.3, window.innerHeight * 0.3, "Nemo");
+pond.addCreature(CreatureSpecies.Fish, window.innerWidth * 0.5, window.innerHeight * 0.45, "Dory");
+pond.addCreature(CreatureSpecies.Fish, window.innerWidth * 0.65, window.innerHeight * 0.55, "Bubbles");
+pond.addCreature(CreatureSpecies.Frog, window.innerWidth * 0.4, window.innerHeight * 0.7, "Kermit");
+pond.addCreature(CreatureSpecies.Frog, window.innerWidth * 0.55, window.innerHeight * 0.35, "Tad");
+pond.addCreature(CreatureSpecies.Crab, window.innerWidth * 0.2, window.innerHeight * 0.8, "Crabby");
+pond.addCreature(CreatureSpecies.Crab, window.innerWidth * 0.75, window.innerHeight * 0.75, "Snappy");
+pond.addCreature(CreatureSpecies.Lobster, window.innerWidth * 0.35, window.innerHeight * 0.85, "Larry");
+pond.addCreature(CreatureSpecies.Lobster, window.innerWidth * 0.6, window.innerHeight * 0.9, "Pinchy");
+pond.addCreature(CreatureSpecies.Eel, window.innerWidth * 0.45, window.innerHeight * 0.5, "Slither");
+pond.addCreature(CreatureSpecies.Eel, window.innerWidth * 0.7, window.innerHeight * 0.4, "Zap");
 
 async function toggleInteraction(): Promise<void> {
   const interactive = await invoke<boolean>("toggle_interaction");

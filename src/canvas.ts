@@ -6,6 +6,7 @@ import { WeatherRenderer } from "./renderer/weather";
 import { VERT_SRC, FRAG_SRC } from "./renderer/shaders";
 import { ColorTint, DayCycleManager } from "./sim/time";
 import { Fish, FishManager } from "./sim/creatures";
+import { CreatureFactory, CreatureSpecies } from "./sim/species";
 import { FoodManager } from "./sim/feeding";
 import { DecorationManager, DecorationType } from "./sim/decor";
 import { DecorRenderer } from "./renderer/decor";
@@ -44,8 +45,10 @@ export class CreatureLayer {
     this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   }
 
-  addFish(x: number, y: number, name: string): Fish {
-    return this.mgr.addFish(x, y, name);
+  addCreature(species: CreatureSpecies, x: number, y: number, name: string): Fish {
+    const c = CreatureFactory.create(species, x, y, name);
+    this.mgr.fish.push(c);
+    return c;
   }
 
   dropFood(x: number, y: number): void {
@@ -150,8 +153,8 @@ export class PondCanvas {
     this.engine.init(VERT_SRC, FRAG_SRC);
   }
 
-  addFish(x: number, y: number, name: string): Fish {
-    return this.creatures.addFish(x, y, name);
+  addCreature(species: CreatureSpecies, x: number, y: number, name: string): Fish {
+    return this.creatures.addCreature(species, x, y, name);
   }
 
   dropFood(x: number, y: number): void {

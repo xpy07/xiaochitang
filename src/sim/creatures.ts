@@ -5,6 +5,16 @@ export enum LifeStage {
   Dead = "dead",
 }
 
+export enum CreatureSpecies {
+  Fish = "fish",
+  Frog = "frog",
+  Crab = "crab",
+  Lobster = "lobster",
+  Eel = "eel",
+}
+
+export type MovementType = "swim" | "crawl" | "undulate";
+
 export interface FoodTarget {
   x: number;
   y: number;
@@ -33,6 +43,10 @@ export class Fish {
   alive: boolean = true;
   stage: LifeStage = LifeStage.Juvenile;
   color: [number, number, number] = [0.9, 0.5, 0.3];
+  species: CreatureSpecies = CreatureSpecies.Fish;
+  movementType: MovementType = "swim";
+  isTadpole: boolean = false;
+  phase: number = 0;
 
   constructor(x: number, y: number, name: string) {
     this.x = x;
@@ -130,8 +144,23 @@ export class Fish {
         this.direction = Math.atan2(avoid.y, avoid.x);
       }
     }
-    this.x += Math.cos(this.direction) * this.speed * dt;
-    this.y += Math.sin(this.direction) * this.speed * dt;
+    this.applyMotion(dt, boundsW, boundsH);
+  }
+
+  protected applyMotion(dt: number, boundsW: number, boundsH: number): void {
+    if (this.movementType === "crawl" && this.y < boundsH - 4) {
+      this.direction = Math.atan2(boundsH - this.y, Math.cos(this.direction) * 30 + 0.01);
+    }
+    let vx = Math.cos(this.direction) * this.speed * dt;
+    let vy = Math.sin(this.direction) * this.speed * dt;
+    if (this.movementType === "undulate") {
+      this.phase += dt * 8;
+      const wiggle = Math.sin(this.phase) * this.speed * 0.5 * dt;
+      vx += -Math.sin(this.direction) * wiggle;
+      vy += Math.cos(this.direction) * wiggle;
+    }
+    this.x += vx;
+    this.y += vy;
     if (this.x < 0) {
       this.x = 0;
       this.direction = Math.PI - this.direction;
@@ -146,7 +175,11 @@ export class Fish {
     }
     if (this.y > boundsH) {
       this.y = boundsH;
-      this.direction = -this.direction;
+      if (this.movementType === "crawl") {
+        this.direction = Math.cos(this.direction) >= 0 ? 0.05 : Math.PI - 0.05;
+      } else {
+        this.direction = -this.direction;
+      }
     }
   }
 }
