@@ -34,6 +34,7 @@
     "longDescription": "桌面鱼塘模拟器",
     "category": "Entertainment",
     "shortDescription": "小鱼塘 - 桌面壁纸鱼塘",
+    "createUpdaterArtifacts": true,
     "windows": {
       "webviewInstallMode": { "type": "downloadBootstrapper" },
       "nsis": {
@@ -47,6 +48,7 @@
       "endpoints": [
         "https://raw.githubusercontent.com/xpy07/xiaochitang/main/update.json"
       ],
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IENCNkIxRUJFRDRFNjcwM0UKUldRK2NPYlV2aDVyeXdoM2FLdVdVcXVIU0pmbzZtMVA0a0Y2Uk0yK21XbGpNbjlVeDBRSjNydTAK",
       "dialog": true
     }
   }
