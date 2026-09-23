@@ -29,7 +29,18 @@
   "bundle": {
     "active": true,
     "targets": ["msi", "nsis"],
-    "icon": ["icons/icon.png", "icons/icon.ico"]
+    "icon": ["icons/icon.png", "icons/icon.ico"],
+    "publisher": "Fishpond",
+    "longDescription": "桌面鱼塘模拟器",
+    "category": "Entertainment",
+    "shortDescription": "小鱼塘 - 桌面壁纸鱼塘",
+    "windows": {
+      "webviewInstallMode": { "type": "downloadBootstrapper" },
+      "nsis": {
+        "installMode": "currentUser",
+        "languages": ["SimpChinese", "English"]
+      }
+    }
   },
   "plugins": {
     "updater": {

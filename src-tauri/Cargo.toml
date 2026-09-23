@@ -17,3 +17,9 @@ windows = { version = "0.58", features = [
   "Win32_Foundation",
   "Win32_Graphics_Dwm",
 ] }
+
+[package.metadata.bundle]
+publisher = "Fishpond"
+description = "桌面鱼塘模拟器"
+category = "Entertainment"
+shortDescription = "小鱼塘 - 桌面壁纸鱼塘"
