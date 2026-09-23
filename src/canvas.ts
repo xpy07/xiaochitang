@@ -13,6 +13,7 @@ import { DecorRenderer } from "./renderer/decor";
 import { PlayManager } from "./sim/play";
 import { RippleRenderer } from "./renderer/ripple";
 import { IconManager, IconRect } from "./sim/icons";
+import { LifeStage } from "./sim/creatures";
 
 const clock = new Date();
 
@@ -29,6 +30,9 @@ export class CreatureLayer {
   private rippleRenderer = new RippleRenderer();
   private weather: WeatherRenderer | null = null;
   private lastTime = 0;
+  private matured = new WeakSet<Fish>();
+  onEaten?: () => void;
+  onMature?: () => void;
 
   constructor() {
     this.canvas = document.getElementById("creatures") as HTMLCanvasElement;
@@ -80,6 +84,10 @@ export class CreatureLayer {
     this.weather = w;
   }
 
+  setOnEaten(cb: () => void): void {
+    this.foods.onEaten = cb;
+  }
+
   updateIcons(rects: IconRect[]): void {
     this.icons.update(rects);
   }
@@ -101,6 +109,12 @@ export class CreatureLayer {
       this.play.active,
       this.icons,
     );
+    for (const f of this.mgr.fish) {
+      if (f.stage === LifeStage.Adult && !this.matured.has(f)) {
+        this.matured.add(f);
+        this.onMature?.();
+      }
+    }
     this.ctx.clearRect(0, 0, w, h);
     for (const d of this.decorMgr.decorations) {
       this.decorRenderer.render(this.ctx, d);
@@ -187,6 +201,14 @@ export class PondCanvas {
 
   setWeather(w: WeatherRenderer): void {
     this.creatures.setWeather(w);
+  }
+
+  setOnEaten(cb: () => void): void {
+    this.creatures.setOnEaten(cb);
+  }
+
+  setOnMature(cb: () => void): void {
+    this.creatures.onMature = cb;
   }
 
   updateIcons(rects: IconRect[]): void {

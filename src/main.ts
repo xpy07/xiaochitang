@@ -10,12 +10,34 @@ import { CustomCreatureManager, createCreatureFromConfig } from "./sim/custom";
 import { CreatureEditor } from "./ui/editor";
 import { SettingsPanel } from "./ui/settings";
 import { IconRect } from "./sim/icons";
+import { AchievementManager, Achievement } from "./sim/achievements";
+import { AchievementToast } from "./ui/achievements";
 
 const pond = new PondCanvas();
 const cursor = new CursorManager();
 const weatherMgr = new WeatherManager();
 const weatherRenderer = new WeatherRenderer();
 pond.setWeather(weatherRenderer);
+
+const achievements = new AchievementManager();
+achievements.load();
+const toast = new AchievementToast();
+
+function showUnlock(a: Achievement | null): void {
+  if (a) toast.show(a);
+}
+
+pond.setOnEaten(() => showUnlock(achievements.recordFeed()));
+pond.setOnMature(() => showUnlock(achievements.recordHealthyAdult()));
+
+let lastDay = new Date().getDate();
+function checkDayBoundary(): void {
+  const day = new Date().getDate();
+  if (day !== lastDay) {
+    lastDay = day;
+    showUnlock(achievements.recordDay());
+  }
+}
 
 async function refreshWeather(): Promise<void> {
   await weatherMgr.fetchWeather();
@@ -158,6 +180,7 @@ window.addEventListener("keydown", (e) => {
 });
 
 function loop(timeMs: number): void {
+  checkDayBoundary();
   pond.render(timeMs);
   requestAnimationFrame(loop);
 }

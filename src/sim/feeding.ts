@@ -25,6 +25,7 @@ export class Food {
 
 export class FoodManager {
   foods: Food[] = [];
+  onEaten?: () => void;
 
   drop(x: number, y: number): void {
     this.foods.push(new Food(x, y));
@@ -33,6 +34,9 @@ export class FoodManager {
   update(dt: number, boundsH: number): void {
     for (const f of this.foods) {
       f.update(dt);
+    }
+    for (const f of this.foods) {
+      if (f.consumed) this.onEaten?.();
     }
     this.foods = this.foods.filter((f) => !f.consumed && f.y < boundsH);
   }
