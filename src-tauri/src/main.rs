@@ -12,6 +12,20 @@ pub struct AppState {
     pub interactive: AtomicBool,
 }
 
+#[derive(serde::Serialize)]
+struct IconRect {
+    x: f64,
+    y: f64,
+    width: f64,
+    height: f64,
+}
+
+// TODO: real Win32 implementation using LVM_GETITEMPOSITION on SysListView32 in Progman/WorkerW
+#[tauri::command]
+fn get_desktop_icons() -> Vec<IconRect> {
+    vec![]
+}
+
 #[tauri::command]
 fn toggle_interaction(app: AppHandle, state: State<AppState>) -> bool {
     let new_val = !state.interactive.fetch_xor(true, Ordering::Relaxed);
@@ -32,7 +46,7 @@ fn main() {
         .manage(AppState {
             interactive: AtomicBool::new(false),
         })
-        .invoke_handler(tauri::generate_handler![toggle_interaction])
+        .invoke_handler(tauri::generate_handler![toggle_interaction, get_desktop_icons])
         .setup(|app| {
             let handle = app.handle().clone();
             let window = app.get_webview_window("main").expect("no main window");

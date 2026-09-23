@@ -12,6 +12,10 @@ export interface FoodTarget {
   eat(amount: number): void;
 }
 
+export interface AvoidanceSource {
+  getAvoidance(px: number, py: number, margin?: number): { x: number; y: number } | null;
+}
+
 const ATTRACT_RANGE = 150;
 const EAT_RANGE = 10;
 const PLAY_RANGE = 100;
@@ -71,10 +75,11 @@ export class Fish {
     playX?: number,
     playY?: number,
     playActive?: boolean,
+    icons?: AvoidanceSource,
   ): void {
     this.grow(dt * 60);
     this.advanceAge(dt * 60);
-    this.update(dt, boundsW, boundsH, foods, playX, playY, playActive);
+    this.update(dt, boundsW, boundsH, foods, playX, playY, playActive, icons);
   }
 
   update(
@@ -85,6 +90,7 @@ export class Fish {
     playX?: number,
     playY?: number,
     playActive?: boolean,
+    icons?: AvoidanceSource,
   ): void {
     if (!this.alive) return;
     let target: FoodTarget | null = null;
@@ -117,6 +123,12 @@ export class Fish {
       }
     } else if (Math.random() < 0.02) {
       this.direction += (Math.random() - 0.5) * 1.5;
+    }
+    if (icons) {
+      const avoid = icons.getAvoidance(this.x, this.y);
+      if (avoid) {
+        this.direction = Math.atan2(avoid.y, avoid.x);
+      }
     }
     this.x += Math.cos(this.direction) * this.speed * dt;
     this.y += Math.sin(this.direction) * this.speed * dt;
@@ -156,9 +168,10 @@ export class FishManager {
     playX?: number,
     playY?: number,
     playActive?: boolean,
+    icons?: AvoidanceSource,
   ): void {
     for (const f of this.fish) {
-      f.tick(dt, boundsW, boundsH, foods, playX, playY, playActive);
+      f.tick(dt, boundsW, boundsH, foods, playX, playY, playActive, icons);
     }
     this.fish = this.fish.filter((f) => f.alive);
   }

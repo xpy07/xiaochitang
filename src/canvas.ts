@@ -11,6 +11,7 @@ import { DecorationManager, DecorationType } from "./sim/decor";
 import { DecorRenderer } from "./renderer/decor";
 import { PlayManager } from "./sim/play";
 import { RippleRenderer } from "./renderer/ripple";
+import { IconManager, IconRect } from "./sim/icons";
 
 const clock = new Date();
 
@@ -21,6 +22,7 @@ export class CreatureLayer {
   private foods = new FoodManager();
   private decorMgr = new DecorationManager();
   private play = new PlayManager();
+  private icons = new IconManager();
   private renderer = new FishRenderer();
   private decorRenderer = new DecorRenderer();
   private rippleRenderer = new RippleRenderer();
@@ -71,6 +73,10 @@ export class CreatureLayer {
     this.weather = w;
   }
 
+  updateIcons(rects: IconRect[]): void {
+    this.icons.update(rects);
+  }
+
   render(timeMs: number, w: number, h: number): void {
     const dt = this.lastTime
       ? Math.min((timeMs - this.lastTime) / 1000, 0.1)
@@ -86,6 +92,7 @@ export class CreatureLayer {
       this.play.mouseX,
       this.play.mouseY,
       this.play.active,
+      this.icons,
     );
     this.ctx.clearRect(0, 0, w, h);
     for (const d of this.decorMgr.decorations) {
@@ -99,6 +106,18 @@ export class CreatureLayer {
     }
     for (const f of this.mgr.fish) {
       this.renderer.render(this.ctx, f);
+    }
+    for (const r of this.icons.icons) {
+      const cx = r.x + r.width / 2;
+      const cy = r.y + r.height / 2;
+      this.ctx.fillStyle = "rgba(85, 107, 47, 0.35)";
+      this.ctx.beginPath();
+      this.ctx.ellipse(cx, cy, r.width * 0.6, r.height * 0.5, 0, 0, Math.PI * 2);
+      this.ctx.fill();
+      this.ctx.fillStyle = "rgba(139, 90, 43, 0.3)";
+      this.ctx.beginPath();
+      this.ctx.ellipse(cx, cy, r.width * 0.4, r.height * 0.35, 0, 0, Math.PI * 2);
+      this.ctx.fill();
     }
     this.rippleRenderer.render(this.ctx, this.play.ripples);
     if (this.weather) {
@@ -157,6 +176,10 @@ export class PondCanvas {
 
   setWeather(w: WeatherRenderer): void {
     this.creatures.setWeather(w);
+  }
+
+  updateIcons(rects: IconRect[]): void {
+    this.creatures.updateIcons(rects);
   }
 
   private resize(): void {

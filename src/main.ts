@@ -5,6 +5,7 @@ import { CursorManager, InteractionTool } from "./cursor";
 import { WeatherManager } from "./sim/weather";
 import { WeatherRenderer } from "./renderer/weather";
 import { DecorationType } from "./sim/decor";
+import { IconRect } from "./sim/icons";
 
 const pond = new PondCanvas();
 const cursor = new CursorManager();
@@ -21,6 +22,16 @@ refreshWeather().catch(console.error);
 setInterval(() => {
   refreshWeather().catch(console.error);
 }, 10 * 60 * 1000);
+
+async function refreshIcons(): Promise<void> {
+  const icons = await invoke<IconRect[]>("get_desktop_icons");
+  pond.updateIcons(icons);
+}
+
+refreshIcons().catch(console.error);
+setInterval(() => {
+  refreshIcons().catch(console.error);
+}, 2000);
 
 pond.addFish(window.innerWidth * 0.3, window.innerHeight * 0.3, "Nemo");
 pond.addFish(window.innerWidth * 0.5, window.innerHeight * 0.45, "Dory");

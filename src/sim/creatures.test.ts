@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import { Fish, FishManager, LifeStage } from "./creatures";
+import { IconManager } from "./icons";
 
 describe("Fish", () => {
   it("starts as juvenile", () => {
@@ -242,5 +243,51 @@ describe("FishManager", () => {
     expect(fm.count).toBe(0);
     fm.addFish(0, 0, "A");
     expect(fm.count).toBe(1);
+  });
+});
+
+describe("Fish icon avoidance", () => {
+  it("steers away from obstacle when nearby", () => {
+    const fish = new Fish(50, 70, "test");
+    fish.speed = 50;
+    fish.direction = 0;
+    const im = new IconManager();
+    im.add({ x: 80, y: 50, width: 40, height: 40 });
+    fish.update(0.1, 600, 600, undefined, undefined, undefined, undefined, im);
+    expect(fish.direction).not.toBe(0);
+  });
+
+  it("does not enter icon obstacle", () => {
+    const fish = new Fish(50, 70, "test");
+    fish.speed = 50;
+    fish.direction = 0;
+    const im = new IconManager();
+    im.add({ x: 80, y: 50, width: 40, height: 40 });
+    for (let i = 0; i < 40; i++) {
+      fish.update(0.05, 600, 600, undefined, undefined, undefined, undefined, im);
+    }
+    expect(im.isInside(fish.x, fish.y)).toBe(false);
+  });
+
+  it("moves normally with empty icon manager", () => {
+    const fish = new Fish(50, 50, "test");
+    fish.speed = 50;
+    fish.direction = 0;
+    const im = new IconManager();
+    fish.update(0.1, 600, 600, undefined, undefined, undefined, undefined, im);
+    expect(fish.x).toBeGreaterThan(50);
+  });
+
+  it("FishManager passes iconManager to fish", () => {
+    const fm = new FishManager();
+    const fish = fm.addFish(50, 70, "A");
+    fish.speed = 50;
+    fish.direction = 0;
+    const im = new IconManager();
+    im.add({ x: 80, y: 50, width: 40, height: 40 });
+    for (let i = 0; i < 40; i++) {
+      fm.update(0.05, 600, 600, undefined, undefined, undefined, undefined, im);
+    }
+    expect(im.isInside(fish.x, fish.y)).toBe(false);
   });
 });
