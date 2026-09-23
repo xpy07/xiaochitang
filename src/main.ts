@@ -1,7 +1,7 @@
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { PondCanvas } from "./canvas";
-import { CursorManager } from "./cursor";
+import { CursorManager, InteractionTool } from "./cursor";
 
 const pond = new PondCanvas();
 const cursor = new CursorManager();
@@ -25,6 +25,13 @@ listen("hotkey-toggle", () => {
 
 window.addEventListener("mousemove", (e) => {
   cursor.updateMouse(e.clientX, e.clientY);
+});
+
+window.addEventListener("click", (e) => {
+  if (!document.body.classList.contains("interactive")) return;
+  if (cursor.currentTool === InteractionTool.Feed) {
+    pond.dropFood(e.clientX, e.clientY);
+  }
 });
 
 window.addEventListener("keydown", (e) => {

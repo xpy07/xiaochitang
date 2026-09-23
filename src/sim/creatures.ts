@@ -5,6 +5,16 @@ export enum LifeStage {
   Dead = "dead",
 }
 
+export interface FoodTarget {
+  x: number;
+  y: number;
+  consumed: boolean;
+  eat(amount: number): void;
+}
+
+const ATTRACT_RANGE = 150;
+const EAT_RANGE = 10;
+
 export class Fish {
   x: number;
   y: number;
@@ -52,15 +62,42 @@ export class Fish {
     }
   }
 
-  tick(dt: number, boundsW: number, boundsH: number): void {
+  tick(
+    dt: number,
+    boundsW: number,
+    boundsH: number,
+    foods?: FoodTarget[],
+  ): void {
     this.grow(dt * 60);
     this.advanceAge(dt * 60);
-    this.update(dt, boundsW, boundsH);
+    this.update(dt, boundsW, boundsH, foods);
   }
 
-  update(dt: number, boundsW: number, boundsH: number): void {
+  update(
+    dt: number,
+    boundsW: number,
+    boundsH: number,
+    foods?: FoodTarget[],
+  ): void {
     if (!this.alive) return;
-    if (Math.random() < 0.02) {
+    let target: FoodTarget | null = null;
+    let bestDist = ATTRACT_RANGE;
+    if (foods) {
+      for (const f of foods) {
+        if (f.consumed) continue;
+        const d = Math.hypot(f.x - this.x, f.y - this.y);
+        if (d < bestDist) {
+          bestDist = d;
+          target = f;
+        }
+      }
+    }
+    if (target) {
+      this.direction = Math.atan2(target.y - this.y, target.x - this.x);
+      if (bestDist < EAT_RANGE) {
+        target.eat(1);
+      }
+    } else if (Math.random() < 0.02) {
       this.direction += (Math.random() - 0.5) * 1.5;
     }
     this.x += Math.cos(this.direction) * this.speed * dt;
@@ -93,9 +130,14 @@ export class FishManager {
     return f;
   }
 
-  update(dt: number, boundsW: number, boundsH: number): void {
+  update(
+    dt: number,
+    boundsW: number,
+    boundsH: number,
+    foods?: FoodTarget[],
+  ): void {
     for (const f of this.fish) {
-      f.tick(dt, boundsW, boundsH);
+      f.tick(dt, boundsW, boundsH, foods);
     }
     this.fish = this.fish.filter((f) => f.alive);
   }

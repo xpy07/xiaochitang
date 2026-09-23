@@ -48,6 +48,65 @@ describe("Fish", () => {
   });
 });
 
+describe("Fish food-seeking", () => {
+  function makeFood(x: number, y: number) {
+    return {
+      x,
+      y,
+      nutrition: 5,
+      consumed: false,
+      eat(amount: number) {
+        this.nutrition -= amount;
+        if (this.nutrition <= 0) this.consumed = true;
+      },
+    };
+  }
+
+  it("moves toward food within range", () => {
+    const fish = new Fish(50, 50, "test");
+    fish.speed = 50;
+    const food = makeFood(100, 50);
+    food.nutrition = 1000;
+    for (let i = 0; i < 20; i++) fish.update(0.1, 600, 600, [food]);
+    expect(Math.hypot(food.x - fish.x, food.y - fish.y)).toBeLessThan(15);
+  });
+
+  it("eats food when within 10px", () => {
+    const fish = new Fish(50, 50, "test");
+    const food = makeFood(55, 50);
+    fish.update(0.016, 600, 600, [food]);
+    expect(food.nutrition).toBeLessThan(5);
+  });
+
+  it("ignores food beyond 150px", () => {
+    const fish = new Fish(50, 50, "test");
+    fish.speed = 50;
+    const food = makeFood(500, 50);
+    for (let i = 0; i < 10; i++) fish.update(0.016, 600, 600, [food]);
+    expect(food.nutrition).toBe(5);
+    expect(Math.hypot(food.x - fish.x, food.y - fish.y)).toBeGreaterThan(140);
+  });
+
+  it("eats nearest food first", () => {
+    const fish = new Fish(50, 50, "test");
+    const near = makeFood(53, 50);
+    const far = makeFood(58, 50);
+    fish.update(0.016, 600, 600, [far, near]);
+    expect(near.nutrition).toBe(4);
+    expect(far.nutrition).toBe(5);
+  });
+
+  it("FishManager passes food to fish", () => {
+    const fm = new FishManager();
+    const fish = fm.addFish(50, 50, "A");
+    fish.speed = 50;
+    const food = makeFood(80, 50);
+    food.nutrition = 1000;
+    for (let i = 0; i < 30; i++) fm.update(0.1, 600, 600, [food]);
+    expect(food.nutrition).toBeLessThan(1000);
+  });
+});
+
 describe("FishManager", () => {
   it("creates fish at given position", () => {
     const fm = new FishManager();

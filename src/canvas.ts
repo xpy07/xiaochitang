@@ -5,6 +5,7 @@ import { FishRenderer } from "./renderer/fish";
 import { VERT_SRC, FRAG_SRC } from "./renderer/shaders";
 import { ColorTint, DayCycleManager } from "./sim/time";
 import { Fish, FishManager } from "./sim/creatures";
+import { FoodManager } from "./sim/feeding";
 
 const clock = new Date();
 
@@ -12,6 +13,7 @@ export class CreatureLayer {
   private canvas: HTMLCanvasElement;
   private ctx: CanvasRenderingContext2D;
   private mgr = new FishManager();
+  private foods = new FoodManager();
   private renderer = new FishRenderer();
   private lastTime = 0;
 
@@ -34,13 +36,24 @@ export class CreatureLayer {
     return this.mgr.addFish(x, y, name);
   }
 
+  dropFood(x: number, y: number): void {
+    this.foods.drop(x, y);
+  }
+
   render(timeMs: number, w: number, h: number): void {
     const dt = this.lastTime
       ? Math.min((timeMs - this.lastTime) / 1000, 0.1)
       : 0.016;
     this.lastTime = timeMs;
-    this.mgr.update(dt, w, h);
+    this.foods.update(dt, h);
+    this.mgr.update(dt, w, h, this.foods.foods);
     this.ctx.clearRect(0, 0, w, h);
+    this.ctx.fillStyle = "#8b5a2b";
+    for (const f of this.foods.foods) {
+      this.ctx.beginPath();
+      this.ctx.arc(f.x, f.y, 2, 0, Math.PI * 2);
+      this.ctx.fill();
+    }
     for (const f of this.mgr.fish) {
       this.renderer.render(this.ctx, f);
     }
@@ -72,6 +85,10 @@ export class PondCanvas {
 
   addFish(x: number, y: number, name: string): Fish {
     return this.creatures.addFish(x, y, name);
+  }
+
+  dropFood(x: number, y: number): void {
+    this.creatures.dropFood(x, y);
   }
 
   private resize(): void {
