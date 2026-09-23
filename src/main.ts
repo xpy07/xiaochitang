@@ -2,9 +2,24 @@ import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { PondCanvas } from "./canvas";
 import { CursorManager, InteractionTool } from "./cursor";
+import { WeatherManager } from "./sim/weather";
+import { WeatherRenderer } from "./renderer/weather";
 
 const pond = new PondCanvas();
 const cursor = new CursorManager();
+const weatherMgr = new WeatherManager();
+const weatherRenderer = new WeatherRenderer();
+pond.setWeather(weatherRenderer);
+
+async function refreshWeather(): Promise<void> {
+  await weatherMgr.fetchWeather();
+  weatherRenderer.setWeather(weatherMgr.condition, weatherMgr.rainIntensity);
+}
+
+refreshWeather().catch(console.error);
+setInterval(() => {
+  refreshWeather().catch(console.error);
+}, 10 * 60 * 1000);
 
 pond.addFish(window.innerWidth * 0.3, window.innerHeight * 0.3, "Nemo");
 pond.addFish(window.innerWidth * 0.5, window.innerHeight * 0.45, "Dory");

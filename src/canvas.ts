@@ -2,6 +2,7 @@ import { SceneManager } from "./scene";
 import { RenderEngine } from "./renderer/engine";
 import { WaterRenderer } from "./renderer/water";
 import { FishRenderer } from "./renderer/fish";
+import { WeatherRenderer } from "./renderer/weather";
 import { VERT_SRC, FRAG_SRC } from "./renderer/shaders";
 import { ColorTint, DayCycleManager } from "./sim/time";
 import { Fish, FishManager } from "./sim/creatures";
@@ -15,6 +16,7 @@ export class CreatureLayer {
   private mgr = new FishManager();
   private foods = new FoodManager();
   private renderer = new FishRenderer();
+  private weather: WeatherRenderer | null = null;
   private lastTime = 0;
 
   constructor() {
@@ -40,6 +42,10 @@ export class CreatureLayer {
     this.foods.drop(x, y);
   }
 
+  setWeather(w: WeatherRenderer): void {
+    this.weather = w;
+  }
+
   render(timeMs: number, w: number, h: number): void {
     const dt = this.lastTime
       ? Math.min((timeMs - this.lastTime) / 1000, 0.1)
@@ -56,6 +62,10 @@ export class CreatureLayer {
     }
     for (const f of this.mgr.fish) {
       this.renderer.render(this.ctx, f);
+    }
+    if (this.weather) {
+      this.weather.update(dt, w, h);
+      this.weather.render(this.ctx, w, h);
     }
   }
 }
@@ -89,6 +99,10 @@ export class PondCanvas {
 
   dropFood(x: number, y: number): void {
     this.creatures.dropFood(x, y);
+  }
+
+  setWeather(w: WeatherRenderer): void {
+    this.creatures.setWeather(w);
   }
 
   private resize(): void {
