@@ -137,7 +137,7 @@ export class CreatureLayer {
 export class PondCanvas {
   private canvas: HTMLCanvasElement;
   private engine: RenderEngine;
-  private water: WaterRenderer;
+  water: WaterRenderer;
   private creatures = new CreatureLayer();
   private dayCycle = new DayCycleManager();
   private logicalW = 0;

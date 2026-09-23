@@ -6,6 +6,7 @@
   <title>小鱼塘</title>
   <link rel="stylesheet" href="/src/style.css" />
   <link rel="stylesheet" href="/src/editor.css" />
+  <link rel="stylesheet" href="/src/settings.css" />
 </head>
 <body>
   <canvas id="pond"></canvas>
@@ -37,6 +38,37 @@
     <div class="ed-actions">
       <button id="ed-save">保存并放入池塘</button>
       <button id="ed-cancel">取消</button>
+    </div>
+  </div>
+  <div id="settings">
+    <h3>设置</h3>
+    <div class="st-group">
+      <span class="st-label">场景模式</span>
+      <div class="st-btns">
+        <button id="st-mode-pond" class="st-btn active">池塘模式</button>
+        <button id="st-mode-immersive" class="st-btn">沉浸模式</button>
+      </div>
+    </div>
+    <div class="st-group">
+      <span class="st-label">池塘形状</span>
+      <div class="st-btns">
+        <button id="st-shape-circle" class="st-btn active">圆形</button>
+        <button id="st-shape-oval" class="st-btn">椭圆</button>
+        <button id="st-shape-irregular" class="st-btn">不规则</button>
+        <button id="st-shape-rect" class="st-btn">方形圆角</button>
+      </div>
+    </div>
+    <div class="st-group">
+      <span class="st-label">水色</span>
+      <div class="st-btns">
+        <button id="st-color-clear" class="st-btn active">清澈蓝</button>
+        <button id="st-color-jade" class="st-btn">翡翠绿</button>
+        <button id="st-color-dusk" class="st-btn">暮色紫</button>
+        <button id="st-color-deep" class="st-btn">深海蓝</button>
+      </div>
+    </div>
+    <div class="st-actions">
+      <button id="st-close">关闭</button>
     </div>
   </div>
   <script type="module" src="/src/main.ts"></script>

@@ -22,6 +22,11 @@ export class WaterRenderer {
     this.uniforms.time = timeMs * 0.001; // seconds
   }
 
+  setColors(shallow: [number, number, number], deep: [number, number, number]): void {
+    this.uniforms.shallowColor = shallow;
+    this.uniforms.deepColor = deep;
+  }
+
   setLighting(tint: ColorTint, brightness: number): void {
     this.uniforms.tint = tint;
     this.uniforms.brightness = brightness;

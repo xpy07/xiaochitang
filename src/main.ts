@@ -8,6 +8,7 @@ import { DecorationType } from "./sim/decor";
 import { CreatureSpecies } from "./sim/species";
 import { CustomCreatureManager, createCreatureFromConfig } from "./sim/custom";
 import { CreatureEditor } from "./ui/editor";
+import { SettingsPanel } from "./ui/settings";
 import { IconRect } from "./sim/icons";
 
 const pond = new PondCanvas();
@@ -70,6 +71,18 @@ const editor = new CreatureEditor({
   },
 });
 
+const settings = new SettingsPanel({
+  onModeChange: (mode) => {
+    pond.scene.mode = mode;
+  },
+  onShapeChange: (shape) => {
+    pond.scene.setPondShape(shape);
+  },
+  onWaterColorChange: (shallow, deep) => {
+    pond.water.setColors(shallow, deep);
+  },
+});
+
 async function toggleInteraction(): Promise<void> {
   const interactive = await invoke<boolean>("toggle_interaction");
   document.body.classList.toggle("interactive", interactive);
@@ -97,6 +110,7 @@ window.addEventListener("mousemove", (e) => {
 window.addEventListener("click", (e) => {
   if (!document.body.classList.contains("interactive")) return;
   if ((e.target as HTMLElement).closest?.("#editor")) return;
+  if ((e.target as HTMLElement).closest?.("#settings")) return;
   if (cursor.currentTool === InteractionTool.Feed) {
     pond.dropFood(e.clientX, e.clientY);
   }
@@ -119,6 +133,7 @@ window.addEventListener("keydown", (e) => {
   if (e.repeat) return;
   if (e.key === "Escape") {
     editor.close();
+    settings.close();
     return;
   }
   const tag = (e.target as HTMLElement)?.tagName;
@@ -126,9 +141,14 @@ window.addEventListener("keydown", (e) => {
   if (!document.body.classList.contains("interactive")) return;
   if (e.key === "s" || e.key === "S") {
     pond.scene.toggleMode();
+    settings.syncState(pond.scene.mode, pond.scene.pondShape);
   }
   if (e.key === "e" || e.key === "E") {
     editor.toggle();
+  }
+  if (e.key === "p" || e.key === "P") {
+    settings.toggle();
+    settings.syncState(pond.scene.mode, pond.scene.pondShape);
   }
   if (e.key === "Tab") {
     e.preventDefault();
