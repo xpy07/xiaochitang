@@ -7,6 +7,10 @@ mod tray;
 
 use std::sync::atomic::{AtomicBool, Ordering};
 use tauri::{AppHandle, Emitter, Manager, State};
+use windows::core::w;
+use windows::Win32::Foundation::{LPARAM, POINT, WPARAM, HWND};
+use windows::Win32::UI::Controls::{LVM_GETITEMCOUNT, LVM_GETITEMPOSITION};
+use windows::Win32::UI::WindowsAndMessaging::{FindWindowW, FindWindowExW, SendMessageW};
 
 pub struct AppState {
     pub interactive: AtomicBool,
@@ -20,10 +24,58 @@ struct IconRect {
     height: f64,
 }
 
-// TODO: real Win32 implementation using LVM_GETITEMPOSITION on SysListView32 in Progman/WorkerW
+const ICON_SIZE: f64 = 75.0;
+
+unsafe fn find_desktop_listview() -> Option<HWND> {
+    let progman = FindWindowW(w!("Progman"), None).ok()?;
+
+    if let Ok(defview) = FindWindowExW(progman, HWND::default(), w!("SHELLDLL_DefView"), None) {
+        if let Ok(lv) = FindWindowExW(defview, HWND::default(), w!("SysListView32"), None) {
+            return Some(lv);
+        }
+    }
+
+    let mut prev = HWND::default();
+    while let Ok(workerw) = FindWindowExW(HWND::default(), prev, w!("WorkerW"), None) {
+        if let Ok(defview) = FindWindowExW(workerw, HWND::default(), w!("SHELLDLL_DefView"), None) {
+            if let Ok(lv) = FindWindowExW(defview, HWND::default(), w!("SysListView32"), None) {
+                return Some(lv);
+            }
+        }
+        prev = workerw;
+    }
+
+    None
+}
+
 #[tauri::command]
 fn get_desktop_icons() -> Vec<IconRect> {
-    vec![]
+    unsafe {
+        let Some(lv) = find_desktop_listview() else {
+            return vec![];
+        };
+
+        let count = SendMessageW(lv, LVM_GETITEMCOUNT, WPARAM(0), LPARAM(0)).0 as usize;
+        let mut icons = Vec::with_capacity(count);
+
+        for i in 0..count {
+            let mut pt = POINT { x: 0, y: 0 };
+            SendMessageW(
+                lv,
+                LVM_GETITEMPOSITION,
+                WPARAM(i),
+                LPARAM(&mut pt as *mut POINT as isize),
+            );
+            icons.push(IconRect {
+                x: pt.x as f64,
+                y: pt.y as f64,
+                width: ICON_SIZE,
+                height: ICON_SIZE,
+            });
+        }
+
+        icons
+    }
 }
 
 #[tauri::command]
