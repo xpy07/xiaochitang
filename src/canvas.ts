@@ -5,7 +5,7 @@ import { FishRenderer } from "./renderer/fish";
 import { WeatherRenderer } from "./renderer/weather";
 import { VERT_SRC, FRAG_SRC } from "./renderer/shaders";
 import { ColorTint, DayCycleManager } from "./sim/time";
-import { Fish, FishManager, Bounds } from "./sim/creatures";
+import { Fish, FishManager, Bounds, DecorObstacle } from "./sim/creatures";
 import { CreatureFactory, CreatureSpecies } from "./sim/species";
 import { FoodManager } from "./sim/feeding";
 import { DecorationManager, DecorationType } from "./sim/decor";
@@ -102,6 +102,11 @@ export class CreatureLayer {
     this.foods.update(dt, h);
     this.play.update(dt);
     const b = bounds ?? { minX: 0, minY: 0, maxX: w, maxY: h };
+    const decorObstacles: DecorObstacle[] = this.decorMgr.decorations.map((d) => ({
+      x: d.x,
+      y: d.y,
+      radius: d.radius,
+    }));
     this.mgr.update(
       dt,
       b,
@@ -110,6 +115,7 @@ export class CreatureLayer {
       this.play.mouseY,
       this.play.active,
       this.icons,
+      decorObstacles,
     );
     for (const f of this.mgr.fish) {
       if (f.stage === LifeStage.Adult && !this.matured.has(f)) {
@@ -286,6 +292,7 @@ export class PondCanvas {
         minY: clip.y + 10,
         maxX: clip.x + clip.width - 10,
         maxY: clip.y + clip.height - 10,
+        elliptical: true,
       };
     } else {
       this.bounds = {
@@ -293,6 +300,7 @@ export class PondCanvas {
         minY: 0,
         maxX: this.logicalW,
         maxY: this.logicalH,
+        elliptical: true,
       };
     }
 

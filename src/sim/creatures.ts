@@ -26,11 +26,18 @@ export interface AvoidanceSource {
   getAvoidance(px: number, py: number, margin?: number): { x: number; y: number } | null;
 }
 
+export interface DecorObstacle {
+  x: number;
+  y: number;
+  radius: number;
+}
+
 export interface Bounds {
   minX: number;
   minY: number;
   maxX: number;
   maxY: number;
+  elliptical?: boolean;
 }
 
 const ATTRACT_RANGE = 250;
@@ -114,10 +121,11 @@ export class Fish {
     playY?: number,
     playActive?: boolean,
     icons?: AvoidanceSource,
+    decorObstacles?: DecorObstacle[],
   ): void {
     this.grow(dt * 60);
     this.advanceAge(dt * 60);
-    this.update(dt, bounds, foods, playX, playY, playActive, icons);
+    this.update(dt, bounds, foods, playX, playY, playActive, icons, decorObstacles);
   }
 
   update(
@@ -128,6 +136,7 @@ export class Fish {
     playY?: number,
     playActive?: boolean,
     icons?: AvoidanceSource,
+    decorObstacles?: DecorObstacle[],
   ): void {
     if (!this.alive) return;
     this.wobble += dt * 3;
@@ -197,14 +206,29 @@ export class Fish {
       }
     }
 
+    // Decor collision avoidance
+    if (decorObstacles) {
+      for (const d of decorObstacles) {
+        const dist = Math.hypot(d.x - this.x, d.y - this.y);
+        const minDist = d.radius + this.size * 2;
+        if (dist < minDist && dist > 0.1) {
+          const away = Math.atan2(this.y - d.y, this.x - d.x);
+          this.direction = away;
+          this.x += ((this.x - d.x) / dist) * (minDist - dist) * 0.5;
+          this.y += ((this.y - d.y) / dist) * (minDist - dist) * 0.5;
+        }
+      }
+    }
+
     this.applyMotion(dt, bounds, speedMul);
   }
 
   protected applyMotion(dt: number, bounds: Bounds, speedMul: number = 1): void {
+    const margin = this.size;
+
     if (this.movementType === "crawl" && this.y < bounds.maxY - 4) {
       this.direction = Math.atan2(bounds.maxY - this.y, Math.cos(this.direction) * 30 + 0.01);
     }
-
     const spd = this.speed * speedMul;
     let vx = Math.cos(this.direction) * spd * dt;
     let vy = Math.sin(this.direction) * spd * dt;
@@ -219,8 +243,27 @@ export class Fish {
     this.x += vx;
     this.y += vy;
 
-    // Rectangular hard boundary
-    const margin = this.size;
+    // Hard elliptical boundary (only when bounds is elliptical)
+    if (bounds.elliptical) {
+      const cx = (bounds.minX + bounds.maxX) / 2;
+      const cy = (bounds.minY + bounds.maxY) / 2;
+      const rx = (bounds.maxX - bounds.minX) / 2 - margin;
+      const ry = (bounds.maxY - bounds.minY) / 2 - margin;
+      if (rx > 1 && ry > 1) {
+        const nx = (this.x - cx) / rx;
+        const ny = (this.y - cy) / ry;
+        const nDist = Math.sqrt(nx * nx + ny * ny);
+        if (nDist > 0.95) {
+          const scale = 0.95 / nDist;
+          this.x = cx + (this.x - cx) * scale;
+          this.y = cy + (this.y - cy) * scale;
+          const toCenter = Math.atan2(cy - this.y, cx - this.x);
+          this.direction = toCenter + (Math.random() - 0.5) * 0.8;
+        }
+      }
+    }
+
+    // Also enforce rectangle bounds
     if (this.x < bounds.minX + margin) {
       this.x = bounds.minX + margin;
       this.direction = Math.PI - this.direction;
@@ -240,15 +283,6 @@ export class Fish {
       } else {
         this.direction = -this.direction;
       }
-    }
-
-    // Elliptical soft guide: gently steer toward center if near edge (inside ellipse only)
-    const edgeDist = distToEdge(this.x, this.y, bounds);
-    if (edgeDist > 0 && edgeDist < 0.08) {
-      const cx = (bounds.minX + bounds.maxX) / 2;
-      const cy = (bounds.minY + bounds.maxY) / 2;
-      const toCenter = Math.atan2(cy - this.y, cx - this.x);
-      this.direction += (toCenter - this.direction) * 0.1;
     }
   }
 }
@@ -271,9 +305,10 @@ export class FishManager {
     playY?: number,
     playActive?: boolean,
     icons?: AvoidanceSource,
+    decorObstacles?: DecorObstacle[],
   ): void {
     for (const f of this.fish) {
-      f.tick(dt, bounds, foods, playX, playY, playActive, icons);
+      f.tick(dt, bounds, foods, playX, playY, playActive, icons, decorObstacles);
     }
     this.fish = this.fish.filter((f) => f.alive);
   }
