@@ -8,9 +8,10 @@ html, body {
   width: 100%;
   height: 100%;
   overflow: hidden;
-  background: transparent;
+  background: #0a1628;
   cursor: default;
   user-select: none;
+  font-family: "HarmonyOS Sans SC", "Segoe UI Variable", "Segoe UI", "Microsoft YaHei UI", "Microsoft YaHei", system-ui, sans-serif;
 }
 
 body.interactive {
@@ -18,17 +19,40 @@ body.interactive {
 }
 
 #pond {
-  width: 100%;
-  height: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
   display: block;
+  z-index: 0;
 }
 
 #creatures {
-  position: absolute;
+  position: fixed;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
+  width: 100vw;
+  height: 100vh;
   display: block;
   pointer-events: none;
+  z-index: 1;
+}
+
+#settings,
+#editor {
+  display: none;
+}
+
+#settings.open,
+#editor.open {
+  display: block;
+}
+
+.achievements-panel {
+  display: none;
+}
+
+.achievements-panel.open {
+  display: flex;
 }
