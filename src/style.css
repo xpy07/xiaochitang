@@ -98,6 +98,12 @@ body.interactive {
   box-shadow: 0 0 8px rgba(240, 192, 96, 0.3);
 }
 
+.food-btn[data-decor].active {
+  border-color: #c878ff;
+  background: rgba(200, 120, 255, 0.15);
+  box-shadow: 0 0 8px rgba(200, 120, 255, 0.3);
+}
+
 #pond {
   position: fixed;
   top: 0;

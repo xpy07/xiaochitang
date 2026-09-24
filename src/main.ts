@@ -178,18 +178,29 @@ const settings = new SettingsPanel({
 
 // Food type selection
 let currentFoodType = "pellet";
+let currentDecorType = "rock";
 document.querySelectorAll<HTMLButtonElement>(".food-btn").forEach((btn) => {
   btn.addEventListener("click", () => {
-    document.querySelectorAll(".food-btn").forEach((b) => b.classList.remove("active"));
-    btn.classList.add("active");
-    currentFoodType = btn.dataset.food || "pellet";
+    const food = btn.dataset.food;
+    const decor = btn.dataset.decor;
+    if (food) {
+      document.querySelectorAll("[data-food]").forEach((b) => b.classList.remove("active"));
+      btn.classList.add("active");
+      currentFoodType = food;
+    }
+    if (decor) {
+      document.querySelectorAll("[data-decor]").forEach((b) => b.classList.remove("active"));
+      btn.classList.add("active");
+      currentDecorType = decor;
+    }
   });
 });
 
-// Weather city search
+// Weather city search — works outside interactive mode too
 const wlocSearch = document.getElementById("wloc-search") as HTMLInputElement | null;
 if (wlocSearch) {
-  wlocSearch.addEventListener("input", async () => {
+  wlocSearch.addEventListener("input", async (e) => {
+    e.stopPropagation();
     const q = wlocSearch.value.trim();
     const results = document.getElementById("wloc-results");
     if (!results) return;
@@ -201,7 +212,8 @@ if (wlocSearch) {
         `<button class="btn btn-sm" style="width:100%;margin:2px 0;text-align:left;" data-lat="${r.latitude}" data-lon="${r.longitude}" data-name="${r.name}">${r.name}, ${r.country || ""}</button>`
       ).join("");
       results.querySelectorAll<HTMLButtonElement>("button").forEach((btn) => {
-        btn.addEventListener("click", () => {
+        btn.addEventListener("click", (ev) => {
+          ev.stopPropagation();
           const lat = parseFloat(btn.dataset.lat || "0");
           const lon = parseFloat(btn.dataset.lon || "0");
           weatherMgr.setLocation(lat, lon);
@@ -293,13 +305,18 @@ window.addEventListener("mousemove", (e) => {
 window.addEventListener("click", (e) => {
   if (!document.body.classList.contains("interactive")) return;
   const target = e.target as HTMLElement;
-  if (target.closest?.("#editor, #settings, #achievements-panel, #toolbar")) return;
+  if (target.closest?.("#settings, #editor, #achievements-panel, #toolbar, #custom-cursor")) return;
   if (cursor.currentTool === InteractionTool.Feed) {
     pond.dropFood(e.clientX, e.clientY, currentFoodType);
   }
   if (cursor.currentTool === InteractionTool.Place) {
-    const types = Object.values(DecorationType);
-    const type = types[Math.floor(Math.random() * types.length)];
+    const typeMap: Record<string, DecorationType> = {
+      rock: DecorationType.Rock,
+      bridge: DecorationType.Bridge,
+      lotus: DecorationType.Lotus,
+      stone: DecorationType.Stone,
+    };
+    const type = typeMap[currentDecorType] ?? DecorationType.Rock;
     pond.placeDecoration(e.clientX, e.clientY, type);
   }
   if (!cursor.currentTool) {
