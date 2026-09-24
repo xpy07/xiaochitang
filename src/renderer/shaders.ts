@@ -36,9 +36,9 @@ float noise(vec2 p) {
 float fbm(vec2 p) {
   float v = 0.0;
   float a = 0.5;
-  for (int i = 0; i < 4; i++) {
+  for (int i = 0; i < 5; i++) {
     v += a * noise(p);
-    p *= 2.1;
+    p *= 2.07;
     a *= 0.5;
   }
   return v;
@@ -54,85 +54,120 @@ float sdRoundedRect(vec2 p, vec2 b, float r) {
   return length(max(q, 0.0)) + min(max(q.x, q.y), 0.0) - r;
 }
 
+float getSD(vec2 clipP) {
+  if (u_clipShape < 1.5) return sdEllipse(clipP, u_clipSize);
+  if (u_clipShape < 2.5) return sdRoundedRect(clipP, u_clipSize, 0.04);
+  float angle = atan(clipP.y, clipP.x);
+  float wobble = 1.0 + 0.15 * sin(angle * 3.0) + 0.08 * sin(angle * 7.0);
+  return sdEllipse(clipP / wobble, u_clipSize) * wobble;
+}
+
+// Simulated pond bottom texture (visible through water)
+vec3 pondBottom(vec2 p, float depth) {
+  // Sandy/pebbly bottom
+  float grain = fbm(p * 12.0) * 0.5 + 0.5;
+  vec3 sand = vec3(0.25, 0.2, 0.12) * grain;
+
+  // Pebbles
+  float pebble = smoothstep(0.7, 0.75, fbm(p * 25.0));
+  sand = mix(sand, vec3(0.3, 0.28, 0.22), pebble * 0.5);
+
+  // Depth darkening (deeper = darker bottom)
+  sand *= (0.4 + 0.6 * (1.0 - depth));
+  return sand;
+}
+
 void main() {
   vec2 uv = v_uv;
   float t = u_time;
 
   // Scene clip
+  float sd = 1.0;
   if (u_clipShape > 0.5) {
     vec2 clipP = (uv - u_clipCenter) * vec2(u_aspect, 1.0);
-    float sd;
-    if (u_clipShape < 1.5) {
-      sd = sdEllipse(clipP, u_clipSize);
-    } else if (u_clipShape < 2.5) {
-      sd = sdRoundedRect(clipP, u_clipSize, 0.04);
-    } else {
-      float angle = atan(clipP.y, clipP.x);
-      float wobble = 1.0 + 0.15 * sin(angle * 3.0) + 0.08 * sin(angle * 7.0);
-      sd = sdEllipse(clipP / wobble, u_clipSize) * wobble;
-    }
+    sd = getSD(clipP);
     if (sd > 0.01) discard;
   }
 
-  // Wave distortion — slow, realistic pace
-  float w1 = sin(uv.x * 18.0 + t * 0.35) * 0.004 * u_waveStrength;
-  float w2 = sin(uv.y * 14.0 + t * 0.28) * 0.004 * u_waveStrength;
-  float w3 = sin((uv.x + uv.y) * 10.0 + t * 0.2) * 0.003 * u_waveStrength;
-  float n1 = (fbm(uv * 8.0 + t * 0.04) - 0.5) * 0.01 * u_waveStrength;
-  float n2 = (fbm(uv * 12.0 - t * 0.03) - 0.5) * 0.006 * u_waveStrength;
+  // Multi-layer wave distortion (organic, slow)
+  float w1 = sin(uv.x * 18.0 + t * 0.3) * 0.003 * u_waveStrength;
+  float w2 = sin(uv.y * 14.0 + t * 0.25) * 0.003 * u_waveStrength;
+  float w3 = sin((uv.x + uv.y) * 10.0 + t * 0.2) * 0.002 * u_waveStrength;
+  float n1 = (fbm(uv * 6.0 + t * 0.03) - 0.5) * 0.008 * u_waveStrength;
+  float n2 = (fbm(uv * 10.0 - t * 0.02) - 0.5) * 0.005 * u_waveStrength;
   vec2 distortedUV = uv + vec2(w1 + n1, w2 + w3 + n2);
 
-  // Depth gradient
+  // Depth: center deep, edge shallow
   float dist = length(distortedUV - 0.5);
-  float depth = 1.0 - smoothstep(0.1, 0.65, dist);
+  float depth = 1.0 - smoothstep(0.05, 0.55, dist);
   depth = clamp(depth, 0.0, 1.0);
 
-  // Base water color
-  float depthMod = depth + (fbm(distortedUV * 4.0 + t * 0.05) - 0.5) * 0.15;
-  vec3 color = mix(u_shallowColor, u_deepColor, clamp(depthMod, 0.0, 1.0));
+  // Wave normal approximation (for refraction and fresnel)
+  float dx = w1 + n1;
+  float dy = w2 + w3 + n2;
+  vec3 normal = normalize(vec3(-dx * 30.0, -dy * 30.0, 1.0));
 
-  // Caustics — slow and soft
-  float c1 = sin(distortedUV.x * 35.0 + t * 0.5 + fbm(distortedUV * 3.0) * 4.0);
-  float c2 = sin(distortedUV.y * 32.0 + t * 0.4 + fbm(distortedUV * 3.5) * 4.0);
-  float c3 = sin((distortedUV.x - distortedUV.y) * 28.0 + t * 0.35);
+  // Fresnel: edge more reflective, center more transparent
+  vec3 viewDir = vec3(0.0, 0.0, 1.0);
+  float fresnel = pow(1.0 - max(dot(normal, viewDir), 0.0), 3.0);
+
+  // Refraction: offset UV for bottom lookup
+  vec2 refractUV = distortedUV + normal.xy * 0.02;
+
+  // Visible bottom through water (3D depth illusion)
+  vec3 bottomColor = pondBottom(refractUV, depth);
+
+  // Water body color (light absorption with depth)
+  float depthMod = depth + (fbm(distortedUV * 3.0 + t * 0.03) - 0.5) * 0.1;
+  vec3 waterBody = mix(u_shallowColor, u_deepColor, clamp(depthMod, 0.0, 1.0));
+
+  // Mix bottom (transparent) with water body (opaque) based on depth
+  // Shallow water = see more bottom; deep = more opaque
+  float opacity = mix(0.5, 0.92, depth);
+  vec3 color = mix(bottomColor, waterBody, opacity);
+
+  // Caustics (light patterns on bottom, visible in shallow)
+  float c1 = sin(refractUV.x * 35.0 + t * 0.4 + fbm(refractUV * 3.0) * 4.0);
+  float c2 = sin(refractUV.y * 32.0 + t * 0.35 + fbm(refractUV * 3.5) * 4.0);
+  float c3 = sin((refractUV.x - refractUV.y) * 28.0 + t * 0.3);
   float caustic = c1 * c2 + c3 * 0.5;
-  caustic = smoothstep(0.2, 0.9, caustic * 0.5 + 0.5);
-  caustic *= (1.0 - depth * 0.4);
-  color += caustic * 0.08;
+  caustic = smoothstep(0.3, 0.9, caustic * 0.5 + 0.5);
+  caustic *= (1.0 - depth * 0.6); // Stronger in shallow (on bottom)
+  color += caustic * 0.1 * vec3(0.8, 0.9, 1.0);
 
-  // Sparkle — subtle
-  float sparkle = noise(distortedUV * 80.0 + t * 0.8);
-  sparkle = smoothstep(0.88, 0.96, sparkle) * 0.08;
+  // Specular highlight from waves (fresnel + sun-like)
+  float specular = pow(max(dot(normal, normalize(vec3(0.3, 0.5, 0.8))), 0.0), 40.0);
+  color += specular * 0.15 * vec3(1.0, 0.95, 0.8);
+
+  // Fresnel rim: bright edge where water meets shore
+  color += fresnel * 0.12 * vec3(0.5, 0.8, 0.9);
+
+  // Surface shimmer (tiny sparkles)
+  float sparkle = noise(distortedUV * 60.0 + t * 0.6);
+  sparkle = smoothstep(0.9, 0.97, sparkle) * 0.1;
   color += sparkle;
 
-  // Shore glow
-  float shore = smoothstep(0.45, 0.55, dist);
-  color += shore * 0.03 * vec3(0.3, 0.5, 0.4);
+  // Subtle depth fog
+  float fog = depth * 0.08;
+  color = mix(color, vec3(0.05, 0.1, 0.15), fog);
 
-  // Atmospheric haze — very slow
-  float haze = fbm(uv * 2.0 + t * 0.008) * 0.03;
-  color += haze * vec3(0.6, 0.7, 0.8);
-
-  // Clip edge glow for pond mode
+  // Clip edge foam/glow
   if (u_clipShape > 0.5) {
-    vec2 clipP = (uv - u_clipCenter) * vec2(u_aspect, 1.0);
-    float sd;
-    if (u_clipShape < 1.5) {
-      sd = sdEllipse(clipP, u_clipSize);
-    } else if (u_clipShape < 2.5) {
-      sd = sdRoundedRect(clipP, u_clipSize, 0.04);
-    } else {
-      float angle = atan(clipP.y, clipP.x);
-      float wobble = 1.0 + 0.15 * sin(angle * 3.0) + 0.08 * sin(angle * 7.0);
-      sd = sdEllipse(clipP / wobble, u_clipSize) * wobble;
-    }
-    float edge = smoothstep(0.0, 0.03, -sd);
-    color += (1.0 - edge) * 0.15 * vec3(0.3, 0.6, 0.5);
+    float edge = smoothstep(0.0, 0.04, -sd);
+    color += (1.0 - edge) * 0.2 * vec3(0.4, 0.7, 0.6);
   }
 
   // Time-of-day tint and brightness
   color *= u_tint * u_brightness;
 
-  gl_FragColor = vec4(color, 0.85);
+  // Alpha: shallow is more transparent (see through), edges slightly more opaque
+  float alpha = mix(0.6, 0.9, depth);
+  alpha = mix(alpha, 0.95, fresnel * 0.3);
+  if (u_clipShape > 0.5) {
+    float edge = smoothstep(0.0, 0.02, -sd);
+    alpha = mix(0.3, alpha, edge);
+  }
+
+  gl_FragColor = vec4(color, alpha);
 }
 `;

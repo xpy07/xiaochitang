@@ -30,11 +30,19 @@ describe("Fish", () => {
     expect(fish.stage).toBe(LifeStage.Adult);
   });
 
-  it("ages and eventually dies", () => {
+  it("ages and eventually dies when mortal", () => {
     const fish = new Fish(0, 0, "test");
+    fish.immortal = false;
     expect(fish.alive).toBe(true);
     for (let i = 0; i < 500; i++) fish.tick(1, B(100, 100));
     expect(fish.alive).toBe(false);
+  });
+
+  it("immortal fish never dies", () => {
+    const fish = new Fish(0, 0, "test");
+    fish.immortal = true;
+    for (let i = 0; i < 500; i++) fish.tick(1, B(100, 100));
+    expect(fish.alive).toBe(true);
   });
 
   it("moves within bounds", () => {
@@ -234,9 +242,9 @@ describe("FishManager", () => {
     expect(fm.fish.length).toBe(2);
   });
 
-  it("removes dead fish", () => {
+  it("removes dead fish when mortal", () => {
     const fm = new FishManager();
-    const fish = fm.addFish(50, 50, "Old");
+    const fish = fm.addFish(50, 50, "Old", false);
     for (let i = 0; i < 500; i++) fish.tick(1, B(100, 100));
     fm.update(0.016, B(100, 100));
     expect(fm.fish.length).toBe(0);

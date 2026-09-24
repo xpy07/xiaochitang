@@ -81,19 +81,40 @@ setInterval(() => {
   refreshIcons().catch(console.error);
 }, 2000);
 
-pond.addCreature(CreatureSpecies.Fish, window.innerWidth * 0.3, window.innerHeight * 0.3, "Nemo");
-pond.addCreature(CreatureSpecies.Fish, window.innerWidth * 0.5, window.innerHeight * 0.45, "Dory");
-pond.addCreature(CreatureSpecies.Fish, window.innerWidth * 0.65, window.innerHeight * 0.55, "Bubbles");
-pond.addCreature(CreatureSpecies.Frog, window.innerWidth * 0.4, window.innerHeight * 0.7, "Kermit");
-pond.addCreature(CreatureSpecies.Frog, window.innerWidth * 0.55, window.innerHeight * 0.35, "Tad");
-pond.addCreature(CreatureSpecies.Crab, window.innerWidth * 0.2, window.innerHeight * 0.8, "Crabby");
-pond.addCreature(CreatureSpecies.Crab, window.innerWidth * 0.75, window.innerHeight * 0.75, "Snappy");
-pond.addCreature(CreatureSpecies.Lobster, window.innerWidth * 0.35, window.innerHeight * 0.85, "Larry");
-pond.addCreature(CreatureSpecies.Lobster, window.innerWidth * 0.6, window.innerHeight * 0.9, "Pinchy");
-pond.addCreature(CreatureSpecies.Eel, window.innerWidth * 0.45, window.innerHeight * 0.5, "Slither");
-pond.addCreature(CreatureSpecies.Eel, window.innerWidth * 0.7, window.innerHeight * 0.4, "Zap");
+// Spawn demo creatures inside pond bounds
+(function spawnDemo() {
+  const p = spawnPos();
+  pond.addCreature(CreatureSpecies.Fish, p.x, p.y, "Nemo");
+  const p2 = spawnPos();
+  pond.addCreature(CreatureSpecies.Fish, p2.x, p2.y, "Dory");
+  const p3 = spawnPos();
+  pond.addCreature(CreatureSpecies.Fish, p3.x, p3.y, "Bubbles");
+  const p4 = spawnPos();
+  pond.addCreature(CreatureSpecies.Frog, p4.x, p4.y, "Kermit");
+  const p5 = spawnPos();
+  pond.addCreature(CreatureSpecies.Frog, p5.x, p5.y, "Tad");
+  const p6 = spawnPos();
+  pond.addCreature(CreatureSpecies.Crab, p6.x, p6.y, "Crabby");
+  const p7 = spawnPos();
+  pond.addCreature(CreatureSpecies.Crab, p7.x, p7.y, "Snappy");
+  const p8 = spawnPos();
+  pond.addCreature(CreatureSpecies.Lobster, p8.x, p8.y, "Larry");
+  const p9 = spawnPos();
+  pond.addCreature(CreatureSpecies.Lobster, p9.x, p9.y, "Pinchy");
+  const p10 = spawnPos();
+  pond.addCreature(CreatureSpecies.Eel, p10.x, p10.y, "Slither");
+  const p11 = spawnPos();
+  pond.addCreature(CreatureSpecies.Eel, p11.x, p11.y, "Zap");
+})();
 
 function spawnPos(): { x: number; y: number } {
+  const clip = pond.scene.getClipRegion(window.innerWidth, window.innerHeight);
+  if (clip) {
+    return {
+      x: clip.x + clip.width * (0.3 + Math.random() * 0.4),
+      y: clip.y + clip.height * (0.3 + Math.random() * 0.4),
+    };
+  }
   return {
     x: window.innerWidth * (0.25 + Math.random() * 0.5),
     y: window.innerHeight * (0.25 + Math.random() * 0.5),

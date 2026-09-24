@@ -20,6 +20,11 @@ describe("Creature", () => {
     expect(c.isTadpole).toBe(false);
   });
 
+  it("immortal by default", () => {
+    const c = CreatureFactory.create(CreatureSpecies.Fish, 50, 50, "test");
+    expect(c.immortal).toBe(true);
+  });
+
   it("crab crawls sideways", () => {
     const c = CreatureFactory.create(CreatureSpecies.Crab, 50, 50, "Crabby");
     expect(c.movementType).toBe("crawl");

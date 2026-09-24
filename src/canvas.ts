@@ -51,11 +51,13 @@ export class CreatureLayer {
 
   addCreature(species: CreatureSpecies, x: number, y: number, name: string): Fish {
     const c = CreatureFactory.create(species, x, y, name);
+    c.immortal = true;
     this.mgr.fish.push(c);
     return c;
   }
 
   addFish(f: Fish): void {
+    f.immortal = true;
     this.mgr.fish.push(f);
   }
 

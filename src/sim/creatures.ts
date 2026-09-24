@@ -57,6 +57,7 @@ export class Fish {
   patternColor: [number, number, number] = [1, 1, 1];
   isTadpole: boolean = false;
   phase: number = 0;
+  immortal: boolean = true;
 
   constructor(x: number, y: number, name: string) {
     this.x = x;
@@ -80,7 +81,7 @@ export class Fish {
   }
 
   private advanceAge(dt: number): void {
-    if (!this.alive) return;
+    if (!this.alive || this.immortal) return;
     this.age += dt;
     if (this.age > this.maxAge * 0.7 && this.stage === LifeStage.Adult) {
       this.stage = LifeStage.Aging;
@@ -163,11 +164,6 @@ export class Fish {
   }
 
   protected applyMotion(dt: number, bounds: Bounds, speedMul: number = 1): void {
-    const w = bounds.maxX - bounds.minX;
-    const h = bounds.maxY - bounds.minY;
-    const cx = bounds.minX + w / 2;
-    const cy = bounds.minY + h / 2;
-
     if (this.movementType === "crawl" && this.y < bounds.maxY - 4) {
       this.direction = Math.atan2(bounds.maxY - this.y, Math.cos(this.direction) * 30 + 0.01);
     }
@@ -208,24 +204,15 @@ export class Fish {
         this.direction = -this.direction;
       }
     }
-
-    // Soft center pull if outside circular boundary
-    const dx = this.x - cx;
-    const dy = this.y - cy;
-    const dist = Math.hypot(dx, dy);
-    const maxR = Math.min(w, h) * 0.48;
-    if (dist > maxR) {
-      const pullAngle = Math.atan2(-dy, -dx);
-      this.direction = this.direction * 0.7 + pullAngle * 0.3;
-    }
   }
 }
 
 export class FishManager {
   fish: Fish[] = [];
 
-  addFish(x: number, y: number, name: string): Fish {
+  addFish(x: number, y: number, name: string, immortal: boolean = true): Fish {
     const f = new Fish(x, y, name);
+    f.immortal = immortal;
     this.fish.push(f);
     return f;
   }
