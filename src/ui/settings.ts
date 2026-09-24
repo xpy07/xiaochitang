@@ -6,6 +6,7 @@ export interface SettingsCallbacks {
   onModeChange: (mode: SceneMode) => void;
   onShapeChange: (shape: PondShape) => void;
   onWaterColorChange: (shallow: Vec3, deep: Vec3) => void;
+  onWeatherLocationChange: (lat: number, lon: number) => void;
 }
 
 const SHAPES: [string, PondShape][] = [
@@ -57,6 +58,23 @@ export class SettingsPanel {
     }
 
     btn("st-close").addEventListener("click", () => this.close());
+
+    // Weather location buttons
+    const locations: [string, number, number][] = [
+      ["wloc-beijing", 39.9, 116.4],
+      ["wloc-shanghai", 31.2, 121.5],
+      ["wloc-guangzhou", 23.1, 113.3],
+      ["wloc-chengdu", 30.6, 104.1],
+      ["wloc-harbin", 45.8, 126.5],
+    ];
+    for (const [id, lat, lon] of locations) {
+      btn(id).addEventListener("click", () => {
+        callbacks.onWeatherLocationChange(lat, lon);
+        for (const [otherId] of locations) {
+          btn(otherId).classList.toggle("active", otherId === id);
+        }
+      });
+    }
   }
 
   toggle(): void {
@@ -70,6 +88,13 @@ export class SettingsPanel {
   syncState(mode: SceneMode, shape: PondShape): void {
     this.updateModeUI(mode);
     this.updateShapeUI(shape);
+  }
+
+  updateWeatherDisplay(icon: string, text: string): void {
+    const iconEl = document.getElementById("weather-icon");
+    const textEl = document.getElementById("weather-text");
+    if (iconEl) iconEl.textContent = icon;
+    if (textEl) textEl.textContent = text;
   }
 
   private setOpen(v: boolean): void {

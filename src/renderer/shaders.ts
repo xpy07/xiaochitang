@@ -74,12 +74,12 @@ void main() {
     if (sd > 0.01) discard;
   }
 
-  // Wave distortion
-  float w1 = sin(uv.x * 18.0 + t * 1.2) * 0.004 * u_waveStrength;
-  float w2 = sin(uv.y * 14.0 + t * 0.9) * 0.004 * u_waveStrength;
-  float w3 = sin((uv.x + uv.y) * 10.0 + t * 0.7) * 0.003 * u_waveStrength;
-  float n1 = (fbm(uv * 8.0 + t * 0.15) - 0.5) * 0.01 * u_waveStrength;
-  float n2 = (fbm(uv * 12.0 - t * 0.1) - 0.5) * 0.006 * u_waveStrength;
+  // Wave distortion — slow, realistic pace
+  float w1 = sin(uv.x * 18.0 + t * 0.35) * 0.004 * u_waveStrength;
+  float w2 = sin(uv.y * 14.0 + t * 0.28) * 0.004 * u_waveStrength;
+  float w3 = sin((uv.x + uv.y) * 10.0 + t * 0.2) * 0.003 * u_waveStrength;
+  float n1 = (fbm(uv * 8.0 + t * 0.04) - 0.5) * 0.01 * u_waveStrength;
+  float n2 = (fbm(uv * 12.0 - t * 0.03) - 0.5) * 0.006 * u_waveStrength;
   vec2 distortedUV = uv + vec2(w1 + n1, w2 + w3 + n2);
 
   // Depth gradient
@@ -91,26 +91,26 @@ void main() {
   float depthMod = depth + (fbm(distortedUV * 4.0 + t * 0.05) - 0.5) * 0.15;
   vec3 color = mix(u_shallowColor, u_deepColor, clamp(depthMod, 0.0, 1.0));
 
-  // Caustics
-  float c1 = sin(distortedUV.x * 35.0 + t * 1.8 + fbm(distortedUV * 3.0) * 4.0);
-  float c2 = sin(distortedUV.y * 32.0 + t * 1.5 + fbm(distortedUV * 3.5) * 4.0);
-  float c3 = sin((distortedUV.x - distortedUV.y) * 28.0 + t * 1.2);
+  // Caustics — slow and soft
+  float c1 = sin(distortedUV.x * 35.0 + t * 0.5 + fbm(distortedUV * 3.0) * 4.0);
+  float c2 = sin(distortedUV.y * 32.0 + t * 0.4 + fbm(distortedUV * 3.5) * 4.0);
+  float c3 = sin((distortedUV.x - distortedUV.y) * 28.0 + t * 0.35);
   float caustic = c1 * c2 + c3 * 0.5;
   caustic = smoothstep(0.2, 0.9, caustic * 0.5 + 0.5);
   caustic *= (1.0 - depth * 0.4);
-  color += caustic * 0.12;
+  color += caustic * 0.08;
 
-  // Sparkle
-  float sparkle = noise(distortedUV * 80.0 + t * 3.0);
-  sparkle = smoothstep(0.85, 0.95, sparkle) * 0.15;
+  // Sparkle — subtle
+  float sparkle = noise(distortedUV * 80.0 + t * 0.8);
+  sparkle = smoothstep(0.88, 0.96, sparkle) * 0.08;
   color += sparkle;
 
   // Shore glow
   float shore = smoothstep(0.45, 0.55, dist);
   color += shore * 0.03 * vec3(0.3, 0.5, 0.4);
 
-  // Atmospheric haze
-  float haze = fbm(uv * 2.0 + t * 0.02) * 0.04;
+  // Atmospheric haze — very slow
+  float haze = fbm(uv * 2.0 + t * 0.008) * 0.03;
   color += haze * vec3(0.6, 0.7, 0.8);
 
   // Clip edge glow for pond mode

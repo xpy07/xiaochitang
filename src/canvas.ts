@@ -5,7 +5,7 @@ import { FishRenderer } from "./renderer/fish";
 import { WeatherRenderer } from "./renderer/weather";
 import { VERT_SRC, FRAG_SRC } from "./renderer/shaders";
 import { ColorTint, DayCycleManager } from "./sim/time";
-import { Fish, FishManager } from "./sim/creatures";
+import { Fish, FishManager, Bounds } from "./sim/creatures";
 import { CreatureFactory, CreatureSpecies } from "./sim/species";
 import { FoodManager } from "./sim/feeding";
 import { DecorationManager, DecorationType } from "./sim/decor";
@@ -92,17 +92,17 @@ export class CreatureLayer {
     this.icons.update(rects);
   }
 
-  render(timeMs: number, w: number, h: number): void {
+  render(timeMs: number, w: number, h: number, bounds?: Bounds): void {
     const dt = this.lastTime
       ? Math.min((timeMs - this.lastTime) / 1000, 0.1)
       : 0.016;
     this.lastTime = timeMs;
     this.foods.update(dt, h);
     this.play.update(dt);
+    const b = bounds ?? { minX: 0, minY: 0, maxX: w, maxY: h };
     this.mgr.update(
       dt,
-      w,
-      h,
+      b,
       this.foods.foods,
       this.play.mouseX,
       this.play.mouseY,
@@ -166,6 +166,7 @@ export class PondCanvas {
   private lightingTint: ColorTint = { r: 1, g: 1, b: 1 };
   private lightingBrightness = 1;
   scene: SceneManager;
+  private bounds: Bounds = { minX: 0, minY: 0, maxX: 1920, maxY: 1080 };
 
   constructor() {
     this.canvas = document.getElementById("pond") as HTMLCanvasElement;
@@ -240,10 +241,29 @@ export class PondCanvas {
       this.lightingTint = this.dayCycle.getLightingTint(hour);
       this.lightingBrightness = this.dayCycle.getBrightness(hour);
     }
+
+    // Compute pond bounds from scene clip
+    const clip = this.scene.getClipRegion(this.logicalW, this.logicalH);
+    if (clip) {
+      this.bounds = {
+        minX: clip.x + 10,
+        minY: clip.y + 10,
+        maxX: clip.x + clip.width - 10,
+        maxY: clip.y + clip.height - 10,
+      };
+    } else {
+      this.bounds = {
+        minX: 0,
+        minY: 0,
+        maxX: this.logicalW,
+        maxY: this.logicalH,
+      };
+    }
+
     this.water.setLighting(this.lightingTint, this.lightingBrightness);
     this.water.setScene(this.scene, this.logicalW, this.logicalH);
     this.water.update(timeMs);
     this.water.render(this.canvas.width, this.canvas.height);
-    this.creatures.render(timeMs, this.logicalW, this.logicalH);
+    this.creatures.render(timeMs, this.logicalW, this.logicalH, this.bounds);
   }
 }

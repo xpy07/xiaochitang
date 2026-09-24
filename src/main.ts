@@ -63,6 +63,7 @@ function checkDayBoundary(): void {
 async function refreshWeather(): Promise<void> {
   await weatherMgr.fetchWeather();
   weatherRenderer.setWeather(weatherMgr.condition, weatherMgr.rainIntensity);
+  updateWeatherUI();
 }
 
 refreshWeather().catch(console.error);
@@ -124,7 +125,30 @@ const settings = new SettingsPanel({
   onWaterColorChange: (shallow, deep) => {
     pond.water.setColors(shallow, deep);
   },
+  onWeatherLocationChange: (lat, lon) => {
+    weatherMgr.setLocation(lat, lon);
+    refreshWeather().then(() => updateWeatherUI());
+  },
 });
+
+function updateWeatherUI(): void {
+  const icons: Record<string, string> = {
+    clear: "☀️",
+    rain: "🌧️",
+    snow: "❄️",
+    fog: "🌫️",
+  };
+  const texts: Record<string, string> = {
+    clear: "晴天",
+    rain: `雨天 (${Math.round(weatherMgr.rainIntensity * 100)}%)`,
+    snow: "雪天",
+    fog: "雾天",
+  };
+  settings.updateWeatherDisplay(
+    icons[weatherMgr.condition] ?? "☀️",
+    texts[weatherMgr.condition] ?? "晴天",
+  );
+}
 
 async function toggleInteraction(): Promise<void> {
   const interactive = (await safeInvoke("toggle_interaction")) as boolean;

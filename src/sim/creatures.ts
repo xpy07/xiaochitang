@@ -26,9 +26,17 @@ export interface AvoidanceSource {
   getAvoidance(px: number, py: number, margin?: number): { x: number; y: number } | null;
 }
 
-const ATTRACT_RANGE = 150;
-const EAT_RANGE = 10;
+export interface Bounds {
+  minX: number;
+  minY: number;
+  maxX: number;
+  maxY: number;
+}
+
+const ATTRACT_RANGE = 250;
+const EAT_RANGE = 14;
 const PLAY_RANGE = 100;
+const FOOD_SPEED_BOOST = 2.5;
 
 export class Fish {
   x: number;
@@ -85,8 +93,7 @@ export class Fish {
 
   tick(
     dt: number,
-    boundsW: number,
-    boundsH: number,
+    bounds: Bounds,
     foods?: FoodTarget[],
     playX?: number,
     playY?: number,
@@ -95,13 +102,12 @@ export class Fish {
   ): void {
     this.grow(dt * 60);
     this.advanceAge(dt * 60);
-    this.update(dt, boundsW, boundsH, foods, playX, playY, playActive, icons);
+    this.update(dt, bounds, foods, playX, playY, playActive, icons);
   }
 
   update(
     dt: number,
-    boundsW: number,
-    boundsH: number,
+    bounds: Bounds,
     foods?: FoodTarget[],
     playX?: number,
     playY?: number,
@@ -109,8 +115,11 @@ export class Fish {
     icons?: AvoidanceSource,
   ): void {
     if (!this.alive) return;
+
+    let speedMul = 1;
     let target: FoodTarget | null = null;
     let bestDist = ATTRACT_RANGE;
+
     if (foods) {
       for (const f of foods) {
         if (f.consumed) continue;
@@ -121,8 +130,10 @@ export class Fish {
         }
       }
     }
+
     if (target) {
       this.direction = Math.atan2(target.y - this.y, target.x - this.x);
+      speedMul = FOOD_SPEED_BOOST;
       if (bestDist < EAT_RANGE) {
         target.eat(1);
       }
@@ -140,48 +151,72 @@ export class Fish {
     } else if (Math.random() < 0.02) {
       this.direction += (Math.random() - 0.5) * 1.5;
     }
+
     if (icons) {
       const avoid = icons.getAvoidance(this.x, this.y);
       if (avoid) {
         this.direction = Math.atan2(avoid.y, avoid.x);
       }
     }
-    this.applyMotion(dt, boundsW, boundsH);
+
+    this.applyMotion(dt, bounds, speedMul);
   }
 
-  protected applyMotion(dt: number, boundsW: number, boundsH: number): void {
-    if (this.movementType === "crawl" && this.y < boundsH - 4) {
-      this.direction = Math.atan2(boundsH - this.y, Math.cos(this.direction) * 30 + 0.01);
+  protected applyMotion(dt: number, bounds: Bounds, speedMul: number = 1): void {
+    const w = bounds.maxX - bounds.minX;
+    const h = bounds.maxY - bounds.minY;
+    const cx = bounds.minX + w / 2;
+    const cy = bounds.minY + h / 2;
+
+    if (this.movementType === "crawl" && this.y < bounds.maxY - 4) {
+      this.direction = Math.atan2(bounds.maxY - this.y, Math.cos(this.direction) * 30 + 0.01);
     }
-    let vx = Math.cos(this.direction) * this.speed * dt;
-    let vy = Math.sin(this.direction) * this.speed * dt;
+
+    const spd = this.speed * speedMul;
+    let vx = Math.cos(this.direction) * spd * dt;
+    let vy = Math.sin(this.direction) * spd * dt;
+
     if (this.movementType === "undulate") {
       this.phase += dt * 8;
-      const wiggle = Math.sin(this.phase) * this.speed * 0.5 * dt;
+      const wiggle = Math.sin(this.phase) * spd * 0.5 * dt;
       vx += -Math.sin(this.direction) * wiggle;
       vy += Math.cos(this.direction) * wiggle;
     }
+
     this.x += vx;
     this.y += vy;
-    if (this.x < 0) {
-      this.x = 0;
+
+    // Boundary constraint (rectangle with soft margin)
+    const margin = this.size * 2;
+    if (this.x < bounds.minX + margin) {
+      this.x = bounds.minX + margin;
       this.direction = Math.PI - this.direction;
     }
-    if (this.x > boundsW) {
-      this.x = boundsW;
+    if (this.x > bounds.maxX - margin) {
+      this.x = bounds.maxX - margin;
       this.direction = Math.PI - this.direction;
     }
-    if (this.y < 0) {
-      this.y = 0;
+    if (this.y < bounds.minY + margin) {
+      this.y = bounds.minY + margin;
       this.direction = -this.direction;
     }
-    if (this.y > boundsH) {
-      this.y = boundsH;
+    if (this.y > bounds.maxY - margin) {
+      this.y = bounds.maxY - margin;
       if (this.movementType === "crawl") {
         this.direction = Math.cos(this.direction) >= 0 ? 0.05 : Math.PI - 0.05;
       } else {
         this.direction = -this.direction;
       }
+    }
+
+    // Soft center pull if outside circular boundary
+    const dx = this.x - cx;
+    const dy = this.y - cy;
+    const dist = Math.hypot(dx, dy);
+    const maxR = Math.min(w, h) * 0.48;
+    if (dist > maxR) {
+      const pullAngle = Math.atan2(-dy, -dx);
+      this.direction = this.direction * 0.7 + pullAngle * 0.3;
     }
   }
 }
@@ -197,8 +232,7 @@ export class FishManager {
 
   update(
     dt: number,
-    boundsW: number,
-    boundsH: number,
+    bounds: Bounds,
     foods?: FoodTarget[],
     playX?: number,
     playY?: number,
@@ -206,7 +240,7 @@ export class FishManager {
     icons?: AvoidanceSource,
   ): void {
     for (const f of this.fish) {
-      f.tick(dt, boundsW, boundsH, foods, playX, playY, playActive, icons);
+      f.tick(dt, bounds, foods, playX, playY, playActive, icons);
     }
     this.fish = this.fish.filter((f) => f.alive);
   }

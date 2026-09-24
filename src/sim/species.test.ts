@@ -16,7 +16,7 @@ describe("Creature", () => {
 
   it("tadpole becomes frog after growth", () => {
     const c = CreatureFactory.create(CreatureSpecies.Frog, 50, 50, "Kermit");
-    for (let i = 0; i < 200; i++) c.tick(1, 200, 200);
+    for (let i = 0; i < 200; i++) c.tick(1, { minX: 0, minY: 0, maxX: 200, maxY: 200 });
     expect(c.isTadpole).toBe(false);
   });
 
