@@ -24,6 +24,40 @@ achievements.load();
 const toast = new AchievementToast();
 const achievementsPanel = new AchievementsPanel(achievements);
 
+function showTip(msg: string): void {
+  let tip = document.getElementById("status-tip");
+  if (!tip) {
+    tip = document.createElement("div");
+    tip.id = "status-tip";
+    tip.style.cssText = [
+      "position:fixed;top:20px;left:50%;transform:translateX(-50%)",
+      "padding:8px 24px;border-radius:20px",
+      "background:rgba(8,18,28,0.85);backdrop-filter:blur(12px)",
+      "border:1px solid rgba(140,200,220,0.2)",
+      "color:#5cc4d4;font-size:14px;font-weight:600",
+      "z-index:300;pointer-events:none;transition:opacity 0.3s",
+    ].join(";");
+    document.body.appendChild(tip);
+  }
+  tip.textContent = msg;
+  tip.style.opacity = "1";
+  setTimeout(() => { tip.style.opacity = "0"; }, 1500);
+}
+
+function spawnPos(): { x: number; y: number } {
+  const clip = pond.scene.getClipRegion(window.innerWidth, window.innerHeight);
+  if (clip) {
+    return {
+      x: clip.x + clip.width * (0.3 + Math.random() * 0.4),
+      y: clip.y + clip.height * (0.3 + Math.random() * 0.4),
+    };
+  }
+  return {
+    x: window.innerWidth * (0.25 + Math.random() * 0.5),
+    y: window.innerHeight * (0.25 + Math.random() * 0.5),
+  };
+}
+
 function showUnlock(a: Achievement | null): void {
   if (!a) return;
   toast.show(a);
@@ -60,6 +94,25 @@ function checkDayBoundary(): void {
   }
 }
 
+function updateWeatherUI(): void {
+  const icons: Record<string, string> = {
+    clear: "☀",
+    rain: "🌧",
+    snow: "❄",
+    fog: "🌫",
+  };
+  const texts: Record<string, string> = {
+    clear: "晴天",
+    rain: `雨天 (${Math.round(weatherMgr.rainIntensity * 100)}%)`,
+    snow: "雪天",
+    fog: "雾天",
+  };
+  settings.updateWeatherDisplay(
+    icons[weatherMgr.condition] ?? "☀",
+    texts[weatherMgr.condition] ?? "晴天",
+  );
+}
+
 async function refreshWeather(): Promise<void> {
   await weatherMgr.fetchWeather();
   weatherRenderer.setWeather(weatherMgr.condition, weatherMgr.rainIntensity);
@@ -67,9 +120,7 @@ async function refreshWeather(): Promise<void> {
 }
 
 refreshWeather().catch(console.error);
-setInterval(() => {
-  refreshWeather().catch(console.error);
-}, 10 * 60 * 1000);
+setInterval(() => { refreshWeather().catch(console.error); }, 10 * 60 * 1000);
 
 async function refreshIcons(): Promise<void> {
   const icons = (await safeInvoke("get_desktop_icons")) as IconRect[];
@@ -77,49 +128,28 @@ async function refreshIcons(): Promise<void> {
 }
 
 refreshIcons().catch(console.error);
-setInterval(() => {
-  refreshIcons().catch(console.error);
-}, 2000);
+setInterval(() => { refreshIcons().catch(console.error); }, 2000);
 
-// Spawn demo creatures inside pond bounds
+// Spawn demo creatures
 (function spawnDemo() {
-  const p = spawnPos();
-  pond.addCreature(CreatureSpecies.Fish, p.x, p.y, "Nemo");
-  const p2 = spawnPos();
-  pond.addCreature(CreatureSpecies.Fish, p2.x, p2.y, "Dory");
-  const p3 = spawnPos();
-  pond.addCreature(CreatureSpecies.Fish, p3.x, p3.y, "Bubbles");
-  const p4 = spawnPos();
-  pond.addCreature(CreatureSpecies.Frog, p4.x, p4.y, "Kermit");
-  const p5 = spawnPos();
-  pond.addCreature(CreatureSpecies.Frog, p5.x, p5.y, "Tad");
-  const p6 = spawnPos();
-  pond.addCreature(CreatureSpecies.Crab, p6.x, p6.y, "Crabby");
-  const p7 = spawnPos();
-  pond.addCreature(CreatureSpecies.Crab, p7.x, p7.y, "Snappy");
-  const p8 = spawnPos();
-  pond.addCreature(CreatureSpecies.Lobster, p8.x, p8.y, "Larry");
-  const p9 = spawnPos();
-  pond.addCreature(CreatureSpecies.Lobster, p9.x, p9.y, "Pinchy");
-  const p10 = spawnPos();
-  pond.addCreature(CreatureSpecies.Eel, p10.x, p10.y, "Slither");
-  const p11 = spawnPos();
-  pond.addCreature(CreatureSpecies.Eel, p11.x, p11.y, "Zap");
-})();
-
-function spawnPos(): { x: number; y: number } {
-  const clip = pond.scene.getClipRegion(window.innerWidth, window.innerHeight);
-  if (clip) {
-    return {
-      x: clip.x + clip.width * (0.3 + Math.random() * 0.4),
-      y: clip.y + clip.height * (0.3 + Math.random() * 0.4),
-    };
+  const names: [CreatureSpecies, string][] = [
+    [CreatureSpecies.Fish, "Nemo"],
+    [CreatureSpecies.Fish, "Dory"],
+    [CreatureSpecies.Fish, "Bubbles"],
+    [CreatureSpecies.Frog, "Kermit"],
+    [CreatureSpecies.Frog, "Tad"],
+    [CreatureSpecies.Crab, "Crabby"],
+    [CreatureSpecies.Crab, "Snappy"],
+    [CreatureSpecies.Lobster, "Larry"],
+    [CreatureSpecies.Lobster, "Pinchy"],
+    [CreatureSpecies.Eel, "Slither"],
+    [CreatureSpecies.Eel, "Zap"],
+  ];
+  for (const [sp, name] of names) {
+    const p = spawnPos();
+    pond.addCreature(sp, p.x, p.y, name);
   }
-  return {
-    x: window.innerWidth * (0.25 + Math.random() * 0.5),
-    y: window.innerHeight * (0.25 + Math.random() * 0.5),
-  };
-}
+})();
 
 const customMgr = new CustomCreatureManager();
 customMgr.load();
@@ -137,38 +167,52 @@ const editor = new CreatureEditor({
 });
 
 const settings = new SettingsPanel({
-  onModeChange: (mode) => {
-    pond.scene.mode = mode;
-  },
-  onShapeChange: (shape) => {
-    pond.scene.setPondShape(shape);
-  },
-  onWaterColorChange: (shallow, deep) => {
-    pond.water.setColors(shallow, deep);
-  },
+  onModeChange: (mode) => { pond.scene.mode = mode; },
+  onShapeChange: (shape) => { pond.scene.setPondShape(shape); },
+  onWaterColorChange: (shallow, deep) => { pond.water.setColors(shallow, deep); },
   onWeatherLocationChange: (lat, lon) => {
     weatherMgr.setLocation(lat, lon);
     refreshWeather().then(() => updateWeatherUI());
   },
 });
 
-function updateWeatherUI(): void {
-  const icons: Record<string, string> = {
-    clear: "☀️",
-    rain: "🌧️",
-    snow: "❄️",
-    fog: "🌫️",
-  };
-  const texts: Record<string, string> = {
-    clear: "晴天",
-    rain: `雨天 (${Math.round(weatherMgr.rainIntensity * 100)}%)`,
-    snow: "雪天",
-    fog: "雾天",
-  };
-  settings.updateWeatherDisplay(
-    icons[weatherMgr.condition] ?? "☀️",
-    texts[weatherMgr.condition] ?? "晴天",
-  );
+// Food type selection
+let currentFoodType = "pellet";
+document.querySelectorAll<HTMLButtonElement>(".food-btn").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".food-btn").forEach((b) => b.classList.remove("active"));
+    btn.classList.add("active");
+    currentFoodType = btn.dataset.food || "pellet";
+  });
+});
+
+// Weather city search
+const wlocSearch = document.getElementById("wloc-search") as HTMLInputElement | null;
+if (wlocSearch) {
+  wlocSearch.addEventListener("input", async () => {
+    const q = wlocSearch.value.trim();
+    const results = document.getElementById("wloc-results");
+    if (!results) return;
+    if (q.length < 2) { results.innerHTML = ""; return; }
+    try {
+      const res = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(q)}&count=5&language=zh`);
+      const data = await res.json();
+      results.innerHTML = (data.results || []).map((r: any) =>
+        `<button class="btn btn-sm" style="width:100%;margin:2px 0;text-align:left;" data-lat="${r.latitude}" data-lon="${r.longitude}" data-name="${r.name}">${r.name}, ${r.country || ""}</button>`
+      ).join("");
+      results.querySelectorAll<HTMLButtonElement>("button").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const lat = parseFloat(btn.dataset.lat || "0");
+          const lon = parseFloat(btn.dataset.lon || "0");
+          weatherMgr.setLocation(lat, lon);
+          refreshWeather().then(() => updateWeatherUI());
+          showTip("位置: " + btn.dataset.name);
+          results.innerHTML = "";
+          wlocSearch.value = "";
+        });
+      });
+    } catch { results.innerHTML = ""; }
+  });
 }
 
 async function toggleInteraction(): Promise<void> {
@@ -176,13 +220,15 @@ async function toggleInteraction(): Promise<void> {
   document.body.classList.toggle("interactive", interactive);
   const btn = document.getElementById("btn-interact");
   if (btn) btn.classList.toggle("active", interactive);
+  const cur = document.getElementById("custom-cursor");
+  if (cur && !interactive) cur.classList.remove("visible");
   if (!interactive) {
     cursor.setTool(null);
     pond.setPlayActive(false);
   }
 }
 
-// Toolbar buttons
+// Toolbar
 document.getElementById("btn-settings")?.addEventListener("click", () => {
   settings.toggle();
   settings.syncState(pond.scene.mode, pond.scene.pondShape);
@@ -219,70 +265,42 @@ document.getElementById("btn-tool")?.addEventListener("click", () => {
   showTip(cursor.currentTool ? `工具: ${labels[cursor.currentTool!]}` : "工具已关闭");
 });
 
-function showTip(msg: string): void {
-  let tip = document.getElementById("status-tip");
-  if (!tip) {
-    tip = document.createElement("div");
-    tip.id = "status-tip";
-    tip.style.cssText = `
-      position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
-      padding: 8px 24px; border-radius: 20px;
-      background: rgba(8,18,28,0.85); backdrop-filter: blur(12px);
-      border: 1px solid rgba(140,200,220,0.2);
-      color: #5cc4d4; font-size: 14px; font-weight: 600;
-      z-index: 300; pointer-events: none;
-      transition: opacity 0.3s;
-    `;
-    document.body.appendChild(tip);
-  }
-  tip.textContent = msg;
-  tip.style.opacity = "1";
-  setTimeout(() => { tip.style.opacity = "0"; }, 1500);
-}
-
-safeListen("hotkey-toggle", () => {
-  toggleInteraction().catch(console.error);
-});
-
+safeListen("hotkey-toggle", () => { toggleInteraction().catch(console.error); });
 safeListen("open-settings", () => {
   settings.toggle();
   settings.syncState(pond.scene.mode, pond.scene.pondShape);
 });
+safeListen("open-achievements", () => { achievementsPanel.toggle(); });
+safeListen("check-updates", () => { checkForUpdates(); });
 
-safeListen("open-achievements", () => {
-  achievementsPanel.toggle();
-});
-
-safeListen("check-updates", () => {
-  checkForUpdates();
-});
-
+// Mouse: custom cursor + play
 window.addEventListener("mousemove", (e) => {
   cursor.updateMouse(e.clientX, e.clientY);
-  if (
-    document.body.classList.contains("interactive") &&
-    cursor.currentTool === InteractionTool.Play
-  ) {
+  const cur = document.getElementById("custom-cursor");
+  if (cur && document.body.classList.contains("interactive")) {
+    cur.classList.add("visible");
+    cur.style.left = e.clientX + "px";
+    cur.style.top = e.clientY + "px";
+    cur.className = "visible" + (cursor.currentTool ? " " + cursor.currentTool : "");
+  }
+  if (document.body.classList.contains("interactive") && cursor.currentTool === InteractionTool.Play) {
     pond.setPlayActive(true);
     pond.moveMouse(e.clientX, e.clientY);
   }
 });
 
+// Click: feed / place
 window.addEventListener("click", (e) => {
   if (!document.body.classList.contains("interactive")) return;
-  if ((e.target as HTMLElement).closest?.("#editor")) return;
-  if ((e.target as HTMLElement).closest?.("#settings")) return;
-  if ((e.target as HTMLElement).closest?.("#achievements-panel")) return;
-  if ((e.target as HTMLElement).closest?.("#toolbar")) return;
+  const target = e.target as HTMLElement;
+  if (target.closest?.("#editor, #settings, #achievements-panel, #toolbar")) return;
   if (cursor.currentTool === InteractionTool.Feed) {
-    pond.dropFood(e.clientX, e.clientY);
-    showTip("投喂！");
+    pond.dropFood(e.clientX, e.clientY, currentFoodType);
   }
   if (cursor.currentTool === InteractionTool.Place) {
     const types = Object.values(DecorationType);
     const type = types[Math.floor(Math.random() * types.length)];
     pond.placeDecoration(e.clientX, e.clientY, type);
-    showTip("放置: " + type);
   }
   if (!cursor.currentTool) {
     showTip("先点 🔧 选择工具");
@@ -312,9 +330,7 @@ window.addEventListener("keydown", (e) => {
     pond.scene.toggleMode();
     settings.syncState(pond.scene.mode, pond.scene.pondShape);
   }
-  if (e.key === "e" || e.key === "E") {
-    editor.toggle();
-  }
+  if (e.key === "e" || e.key === "E") editor.toggle();
   if (e.key === "p" || e.key === "P") {
     settings.toggle();
     settings.syncState(pond.scene.mode, pond.scene.pondShape);
@@ -331,21 +347,12 @@ function loop(timeMs: number): void {
   pond.render(timeMs);
   requestAnimationFrame(loop);
 }
-
 requestAnimationFrame(loop);
 
 async function checkForUpdates(): Promise<void> {
   try {
     const update = (await safeCheckUpdate()) as { version: string } | null;
-    if (update) {
-      console.log(`Update available: ${update.version}`);
-    } else {
-      console.log("Already up to date");
-    }
-  } catch (e) {
-    console.log("Update check skipped:", e);
-  }
+    console.log(update ? `Update: ${update.version}` : "Up to date");
+  } catch { /* skip */ }
 }
-
-// Call on startup after a short delay
 setTimeout(checkForUpdates, 5000);

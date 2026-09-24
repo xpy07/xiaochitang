@@ -28,9 +28,9 @@ export class DecorRenderer {
     const h = d.height;
 
     // Shadow
-    ctx.fillStyle = "rgba(0,0,0,0.15)";
+    ctx.fillStyle = "rgba(0,0,0,0.25)";
     ctx.beginPath();
-    ctx.ellipse(2, 2, w / 2, h / 2, 0, 0, Math.PI * 2);
+    ctx.ellipse(3, 3, w / 2, h / 2, 0, 0, Math.PI * 2);
     ctx.fill();
 
     // Main rock body (irregular)
@@ -45,7 +45,7 @@ export class DecorRenderer {
     ctx.fill();
 
     // Highlight facet
-    ctx.fillStyle = "rgba(255,255,255,0.18)";
+    ctx.fillStyle = "rgba(255,255,255,0.25)";
     ctx.beginPath();
     ctx.moveTo(-w * 0.2, -h * 0.25);
     ctx.quadraticCurveTo(w * 0.1, -h * 0.4, w * 0.3, -h * 0.1);
@@ -53,19 +53,28 @@ export class DecorRenderer {
     ctx.fill();
 
     // Shadow facet
-    ctx.fillStyle = "rgba(0,0,0,0.12)";
+    ctx.fillStyle = "rgba(0,0,0,0.15)";
     ctx.beginPath();
     ctx.moveTo(-w * 0.35, h * 0.1);
     ctx.quadraticCurveTo(-w * 0.1, h * 0.35, w * 0.2, h * 0.3);
     ctx.quadraticCurveTo(-w * 0.05, h * 0.1, -w * 0.2, 0);
     ctx.fill();
 
-    // Moss/lichen
-    ctx.fillStyle = "rgba(80,120,60,0.2)";
+    // Moss
+    ctx.fillStyle = "rgba(80,120,60,0.3)";
     ctx.beginPath();
     ctx.arc(-w * 0.1, -h * 0.2, w * 0.1, 0, Math.PI * 2);
     ctx.arc(w * 0.15, -h * 0.1, w * 0.07, 0, Math.PI * 2);
     ctx.fill();
+
+    // Border for visibility
+    ctx.strokeStyle = "rgba(255,255,255,0.12)";
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(-w * 0.45, 0);
+    ctx.quadraticCurveTo(-w * 0.5, -h * 0.4, -w * 0.15, -h * 0.5);
+    ctx.quadraticCurveTo(w * 0.2, -h * 0.55, w * 0.4, -h * 0.15);
+    ctx.stroke();
   }
 
   private drawBridge(ctx: CanvasRenderingContext2D, d: Decoration): void {
@@ -177,12 +186,12 @@ export class DecorRenderer {
     const r = d.radius;
 
     // Shadow
-    ctx.fillStyle = "rgba(0,0,0,0.12)";
+    ctx.fillStyle = "rgba(0,0,0,0.2)";
     ctx.beginPath();
-    ctx.arc(1, 1, r, 0, Math.PI * 2);
+    ctx.arc(2, 2, r, 0, Math.PI * 2);
     ctx.fill();
 
-    // Body (slightly irregular)
+    // Body
     ctx.fillStyle = d.tint;
     ctx.beginPath();
     ctx.moveTo(-r, 0);
@@ -193,15 +202,24 @@ export class DecorRenderer {
     ctx.fill();
 
     // Highlight
-    ctx.fillStyle = "rgba(255,255,255,0.2)";
+    ctx.fillStyle = "rgba(255,255,255,0.3)";
     ctx.beginPath();
     ctx.ellipse(-r * 0.2, -r * 0.2, r * 0.4, r * 0.3, -0.3, 0, Math.PI * 2);
     ctx.fill();
 
     // Shadow side
-    ctx.fillStyle = "rgba(0,0,0,0.1)";
+    ctx.fillStyle = "rgba(0,0,0,0.15)";
     ctx.beginPath();
     ctx.ellipse(r * 0.15, r * 0.2, r * 0.4, r * 0.3, 0.3, 0, Math.PI * 2);
     ctx.fill();
+
+    // Border for visibility
+    ctx.strokeStyle = "rgba(255,255,255,0.15)";
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(-r, 0);
+    ctx.quadraticCurveTo(-r * 0.8, -r * 0.9, 0, -r * 0.85);
+    ctx.quadraticCurveTo(r * 0.9, -r * 0.7, r, 0);
+    ctx.stroke();
   }
 }

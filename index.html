@@ -13,6 +13,7 @@
 <body>
   <canvas id="pond"></canvas>
   <canvas id="creatures"></canvas>
+  <div id="custom-cursor"></div>
 
   <!-- Toggle Toolbar -->
   <div id="toolbar">
@@ -57,6 +58,15 @@
           </div>
         </div>
         <div class="st-group">
+          <span class="section-label">投喂食物</span>
+          <div class="food-select">
+            <button class="food-btn active" data-food="pellet" title="饲料">🟤</button>
+            <button class="food-btn" data-food="bread" title="面包屑">🍞</button>
+            <button class="food-btn" data-food="worm" title="蚯蚓">🪱</button>
+            <button class="food-btn" data-food="shrimp" title="虾米">🦐</button>
+          </div>
+        </div>
+        <div class="st-group">
           <span class="section-label">天气</span>
           <div id="weather-status" style="margin-bottom:8px;padding:8px 12px;border-radius:8px;background:rgba(0,0,0,0.2);border:1px solid rgba(140,200,220,0.12);">
             <div id="weather-icon" style="font-size:24px;">☀️</div>
@@ -69,6 +79,8 @@
             <button id="wloc-chengdu" class="btn btn-sm">成都</button>
             <button id="wloc-harbin" class="btn btn-sm">哈尔滨</button>
           </div>
+          <input id="wloc-search" type="text" placeholder="搜索城市..." style="width:100%;margin-top:6px;padding:5px 10px;background:rgba(0,0,0,0.3);border:1px solid rgba(140,200,220,0.18);border-radius:6px;color:#e4edf4;font-size:12px;outline:none;" />
+          <div id="wloc-results" style="max-height:80px;overflow-y:auto;margin-top:4px;"></div>
         </div>
     </div>
   </div>

@@ -35,8 +35,19 @@ export interface Bounds {
 
 const ATTRACT_RANGE = 250;
 const EAT_RANGE = 14;
-const PLAY_RANGE = 100;
-const FOOD_SPEED_BOOST = 2.5;
+const PLAY_RANGE = 120;
+const FOOD_SPEED_BOOST = 2.2;
+
+function distToEdge(x: number, y: number, b: Bounds): number {
+  const cx = (b.minX + b.maxX) / 2;
+  const cy = (b.minY + b.maxY) / 2;
+  const rx = (b.maxX - b.minX) / 2;
+  const ry = (b.maxY - b.minY) / 2;
+  if (rx < 1 || ry < 1) return 0;
+  const nx = (x - cx) / rx;
+  const ny = (y - cy) / ry;
+  return 1.0 - Math.sqrt(nx * nx + ny * ny);
+}
 
 export class Fish {
   x: number;
@@ -58,6 +69,9 @@ export class Fish {
   isTadpole: boolean = false;
   phase: number = 0;
   immortal: boolean = true;
+  fleeing: boolean = false;
+  fleeTimer: number = 0;
+  wobble: number = Math.random() * Math.PI * 2;
 
   constructor(x: number, y: number, name: string) {
     this.x = x;
@@ -116,11 +130,13 @@ export class Fish {
     icons?: AvoidanceSource,
   ): void {
     if (!this.alive) return;
+    this.wobble += dt * 3;
 
     let speedMul = 1;
     let target: FoodTarget | null = null;
     let bestDist = ATTRACT_RANGE;
 
+    // Food seeking (highest priority)
     if (foods) {
       for (const f of foods) {
         if (f.consumed) continue;
@@ -133,7 +149,8 @@ export class Fish {
     }
 
     if (target) {
-      this.direction = Math.atan2(target.y - this.y, target.x - this.x);
+      const angle = Math.atan2(target.y - this.y, target.x - this.x);
+      this.direction += (angle - this.direction) * Math.min(1, dt * 10);
       speedMul = FOOD_SPEED_BOOST;
       if (bestDist < EAT_RANGE) {
         target.eat(1);
@@ -144,13 +161,33 @@ export class Fish {
       playY !== undefined &&
       Math.hypot(playX - this.x, playY - this.y) < PLAY_RANGE
     ) {
-      if (Math.random() < 0.5) {
-        this.direction = Math.atan2(playY - this.y, playX - this.x);
+      // Play reaction: curiosity vs flee with smooth transition
+      const dist = Math.hypot(playX - this.x, playY - this.y);
+      const isClose = dist < 50;
+
+      if (this.fleeTimer > 0) {
+        this.fleeTimer -= dt;
+        this.fleeing = true;
+        const awayAngle = Math.atan2(this.y - playY, this.x - playX);
+        this.direction += (awayAngle - this.direction) * Math.min(1, dt * 8);
+        speedMul = 1.8;
+      } else if (isClose) {
+        this.fleeing = true;
+        this.fleeTimer = 0.8 + Math.random() * 0.5;
+        const awayAngle = Math.atan2(this.y - playY, this.x - playX);
+        this.direction = awayAngle;
+        speedMul = 2.2;
       } else {
-        this.direction = Math.atan2(this.y - playY, this.x - playX);
+        this.fleeing = false;
+        const towardAngle = Math.atan2(playY - this.y, playX - this.x);
+        const wobbleOffset = Math.sin(this.wobble * 2) * 0.3;
+        this.direction += (towardAngle + wobbleOffset - this.direction) * Math.min(1, dt * 3);
+        speedMul = 0.7;
       }
-    } else if (Math.random() < 0.02) {
-      this.direction += (Math.random() - 0.5) * 1.5;
+    } else if (this.fleeTimer > 0) {
+      this.fleeTimer -= dt;
+    } else if (Math.random() < 0.015) {
+      this.direction += (Math.random() - 0.5) * 0.8;
     }
 
     if (icons) {
@@ -173,8 +210,8 @@ export class Fish {
     let vy = Math.sin(this.direction) * spd * dt;
 
     if (this.movementType === "undulate") {
-      this.phase += dt * 8;
-      const wiggle = Math.sin(this.phase) * spd * 0.5 * dt;
+      this.phase += dt * 6;
+      const wiggle = Math.sin(this.phase) * spd * 0.4 * dt;
       vx += -Math.sin(this.direction) * wiggle;
       vy += Math.cos(this.direction) * wiggle;
     }
@@ -182,8 +219,8 @@ export class Fish {
     this.x += vx;
     this.y += vy;
 
-    // Boundary constraint (rectangle with soft margin)
-    const margin = this.size * 2;
+    // Rectangular hard boundary
+    const margin = this.size;
     if (this.x < bounds.minX + margin) {
       this.x = bounds.minX + margin;
       this.direction = Math.PI - this.direction;
@@ -203,6 +240,15 @@ export class Fish {
       } else {
         this.direction = -this.direction;
       }
+    }
+
+    // Elliptical soft guide: gently steer toward center if near edge (inside ellipse only)
+    const edgeDist = distToEdge(this.x, this.y, bounds);
+    if (edgeDist > 0 && edgeDist < 0.08) {
+      const cx = (bounds.minX + bounds.maxX) / 2;
+      const cy = (bounds.minY + bounds.maxY) / 2;
+      const toCenter = Math.atan2(cy - this.y, cx - this.x);
+      this.direction += (toCenter - this.direction) * 0.1;
     }
   }
 }

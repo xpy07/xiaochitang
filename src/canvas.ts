@@ -61,8 +61,8 @@ export class CreatureLayer {
     this.mgr.fish.push(f);
   }
 
-  dropFood(x: number, y: number): void {
-    this.foods.drop(x, y);
+  dropFood(x: number, y: number, type: string = "pellet"): void {
+    this.foods.drop(x, y, type);
   }
 
   placeDecoration(x: number, y: number, type: DecorationType, tint?: string): void {
@@ -121,17 +121,51 @@ export class CreatureLayer {
     for (const d of this.decorMgr.decorations) {
       this.decorRenderer.render(this.ctx, d);
     }
-    // draw food
-    this.ctx.fillStyle = "#d4a040";
+    // Draw food with type-specific visuals + fade-in
     for (const f of this.foods.foods) {
-      this.ctx.beginPath();
-      this.ctx.arc(f.x, f.y, 5, 0, Math.PI * 2);
-      this.ctx.fill();
-      this.ctx.fillStyle = "#f0d080";
-      this.ctx.beginPath();
-      this.ctx.arc(f.x - 1, f.y - 1, 2, 0, Math.PI * 2);
-      this.ctx.fill();
-      this.ctx.fillStyle = "#d4a040";
+      const a = Math.min(1, f.opacity);
+      this.ctx.globalAlpha = a;
+      switch (f.type) {
+        case "bread":
+          this.ctx.fillStyle = "#e8c870";
+          this.ctx.beginPath();
+          this.ctx.arc(f.x, f.y, 5, 0, Math.PI * 2);
+          this.ctx.fill();
+          this.ctx.fillStyle = "#f0d890";
+          this.ctx.beginPath();
+          this.ctx.arc(f.x - 1, f.y - 1, 2, 0, Math.PI * 2);
+          this.ctx.fill();
+          break;
+        case "worm":
+          this.ctx.strokeStyle = "#c87060";
+          this.ctx.lineWidth = 3;
+          this.ctx.lineCap = "round";
+          this.ctx.beginPath();
+          this.ctx.moveTo(f.x - 4, f.y);
+          this.ctx.quadraticCurveTo(f.x, f.y + 3 * Math.sin(f.age * 5), f.x + 4, f.y);
+          this.ctx.stroke();
+          break;
+        case "shrimp":
+          this.ctx.fillStyle = "#f08070";
+          this.ctx.beginPath();
+          this.ctx.ellipse(f.x, f.y, 5, 3, 0.3, 0, Math.PI * 2);
+          this.ctx.fill();
+          this.ctx.fillStyle = "#f0a090";
+          this.ctx.beginPath();
+          this.ctx.ellipse(f.x + 2, f.y - 1, 2, 1.5, 0.3, 0, Math.PI * 2);
+          this.ctx.fill();
+          break;
+        default: // pellet
+          this.ctx.fillStyle = "#d4a040";
+          this.ctx.beginPath();
+          this.ctx.arc(f.x, f.y, 5, 0, Math.PI * 2);
+          this.ctx.fill();
+          this.ctx.fillStyle = "#f0d080";
+          this.ctx.beginPath();
+          this.ctx.arc(f.x - 1, f.y - 1, 2, 0, Math.PI * 2);
+          this.ctx.fill();
+      }
+      this.ctx.globalAlpha = 1;
     }
     for (const f of this.mgr.fish) {
       this.renderer.render(this.ctx, f);
@@ -188,8 +222,8 @@ export class PondCanvas {
     this.creatures.addFish(f);
   }
 
-  dropFood(x: number, y: number): void {
-    this.creatures.dropFood(x, y);
+  dropFood(x: number, y: number, type: string = "pellet"): void {
+    this.creatures.dropFood(x, y, type);
   }
 
   placeDecoration(x: number, y: number, type: DecorationType, tint?: string): void {

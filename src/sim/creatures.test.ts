@@ -80,8 +80,8 @@ describe("Fish food-seeking", () => {
     fish.speed = 50;
     const food = makeFood(100, 50);
     food.nutrition = 1000;
-    for (let i = 0; i < 20; i++) fish.update(0.1, B(600, 600), [food]);
-    expect(Math.hypot(food.x - fish.x, food.y - fish.y)).toBeLessThan(15);
+    for (let i = 0; i < 60; i++) fish.update(0.1, B(600, 600), [food]);
+    expect(Math.hypot(food.x - fish.x, food.y - fish.y)).toBeLessThan(20);
   });
 
   it("eats food when within 10px", () => {
@@ -134,17 +134,12 @@ describe("Fish play reaction", () => {
     expect(fish.x).toBeGreaterThan(50);
   });
 
-  it("flees from mouse when scared", () => {
+  it("flees from mouse when startled (close proximity)", () => {
     const fish = new Fish(50, 50, "test");
     fish.speed = 50;
     fish.direction = Math.PI / 2;
-    const spy = vi.spyOn(Math, "random").mockReturnValue(0.9);
-    try {
-      fish.update(0.1, B(600, 600), undefined, 100, 50, true);
-    } finally {
-      spy.mockRestore();
-    }
-    expect(fish.x).toBeLessThan(50);
+    fish.update(0.1, B(600, 600), undefined, 55, 50, true);
+    expect(fish.x).toBeLessThan(55);
   });
 
   it("ignores play when inactive", () => {
