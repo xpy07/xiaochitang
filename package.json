@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "vite",
+    "dev:web": "vite",
     "build": "tsc --noEmit && vite build",
     "tauri": "tauri"
   },

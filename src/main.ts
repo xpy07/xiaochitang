@@ -1,6 +1,4 @@
-import { invoke } from "@tauri-apps/api/core";
-import { listen } from "@tauri-apps/api/event";
-import { check } from "@tauri-apps/plugin-updater";
+import { safeInvoke, safeListen, safeCheckUpdate } from "./tauri-mock";
 import { PondCanvas } from "./canvas";
 import { CursorManager, InteractionTool } from "./cursor";
 import { WeatherManager } from "./sim/weather";
@@ -73,7 +71,7 @@ setInterval(() => {
 }, 10 * 60 * 1000);
 
 async function refreshIcons(): Promise<void> {
-  const icons = await invoke<IconRect[]>("get_desktop_icons");
+  const icons = (await safeInvoke("get_desktop_icons")) as IconRect[];
   pond.updateIcons(icons);
 }
 
@@ -129,7 +127,7 @@ const settings = new SettingsPanel({
 });
 
 async function toggleInteraction(): Promise<void> {
-  const interactive = await invoke<boolean>("toggle_interaction");
+  const interactive = (await safeInvoke("toggle_interaction")) as boolean;
   document.body.classList.toggle("interactive", interactive);
   if (!interactive) {
     cursor.setTool(null);
@@ -137,20 +135,20 @@ async function toggleInteraction(): Promise<void> {
   }
 }
 
-listen("hotkey-toggle", () => {
+safeListen("hotkey-toggle", () => {
   toggleInteraction().catch(console.error);
 });
 
-listen("open-settings", () => {
+safeListen("open-settings", () => {
   settings.toggle();
   settings.syncState(pond.scene.mode, pond.scene.pondShape);
 });
 
-listen("open-achievements", () => {
+safeListen("open-achievements", () => {
   achievementsPanel.toggle();
 });
 
-listen("check-updates", () => {
+safeListen("check-updates", () => {
   checkForUpdates();
 });
 
@@ -227,7 +225,7 @@ requestAnimationFrame(loop);
 
 async function checkForUpdates(): Promise<void> {
   try {
-    const update = await check();
+    const update = (await safeCheckUpdate()) as { version: string } | null;
     if (update) {
       console.log(`Update available: ${update.version}`);
     } else {
