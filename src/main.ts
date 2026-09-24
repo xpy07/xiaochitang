@@ -129,11 +129,45 @@ const settings = new SettingsPanel({
 async function toggleInteraction(): Promise<void> {
   const interactive = (await safeInvoke("toggle_interaction")) as boolean;
   document.body.classList.toggle("interactive", interactive);
+  const btn = document.getElementById("btn-interact");
+  if (btn) btn.classList.toggle("active", interactive);
   if (!interactive) {
     cursor.setTool(null);
     pond.setPlayActive(false);
   }
 }
+
+// Toolbar buttons
+document.getElementById("btn-settings")?.addEventListener("click", () => {
+  settings.toggle();
+  settings.syncState(pond.scene.mode, pond.scene.pondShape);
+  document.getElementById("btn-settings")?.classList.toggle("active");
+});
+document.getElementById("btn-editor")?.addEventListener("click", () => {
+  editor.toggle();
+  document.getElementById("btn-editor")?.classList.toggle("active");
+});
+document.getElementById("btn-achievements")?.addEventListener("click", () => {
+  achievementsPanel.toggle();
+  document.getElementById("btn-achievements")?.classList.toggle("active");
+});
+document.getElementById("btn-interact")?.addEventListener("click", () => {
+  toggleInteraction();
+});
+document.getElementById("btn-scene")?.addEventListener("click", () => {
+  pond.scene.toggleMode();
+  settings.syncState(pond.scene.mode, pond.scene.pondShape);
+});
+document.getElementById("btn-tool")?.addEventListener("click", () => {
+  cursor.cycleTool();
+  pond.setPlayActive(cursor.currentTool === InteractionTool.Play);
+  const labels: Record<string, string> = { feed: "投喂", play: "嬉戏", place: "放置" };
+  const btn = document.getElementById("btn-tool");
+  if (btn) {
+    btn.textContent = cursor.currentTool ? labels[cursor.currentTool] : "🔧";
+    btn.classList.toggle("active", !!cursor.currentTool);
+  }
+});
 
 safeListen("hotkey-toggle", () => {
   toggleInteraction().catch(console.error);
