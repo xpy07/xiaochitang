@@ -3,7 +3,7 @@ export class Food {
   y: number;
   nutrition: number = 5;
   consumed: boolean = false;
-  sinkSpeed: number = 10;
+  sinkSpeed: number = 3;
 
   constructor(x: number, y: number) {
     this.x = x;

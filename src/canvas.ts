@@ -119,11 +119,17 @@ export class CreatureLayer {
     for (const d of this.decorMgr.decorations) {
       this.decorRenderer.render(this.ctx, d);
     }
-    this.ctx.fillStyle = "#8b5a2b";
+    // draw food
+    this.ctx.fillStyle = "#d4a040";
     for (const f of this.foods.foods) {
       this.ctx.beginPath();
-      this.ctx.arc(f.x, f.y, 2, 0, Math.PI * 2);
+      this.ctx.arc(f.x, f.y, 5, 0, Math.PI * 2);
       this.ctx.fill();
+      this.ctx.fillStyle = "#f0d080";
+      this.ctx.beginPath();
+      this.ctx.arc(f.x - 1, f.y - 1, 2, 0, Math.PI * 2);
+      this.ctx.fill();
+      this.ctx.fillStyle = "#d4a040";
     }
     for (const f of this.mgr.fish) {
       this.renderer.render(this.ctx, f);
@@ -235,6 +241,7 @@ export class PondCanvas {
       this.lightingBrightness = this.dayCycle.getBrightness(hour);
     }
     this.water.setLighting(this.lightingTint, this.lightingBrightness);
+    this.water.setScene(this.scene, this.logicalW, this.logicalH);
     this.water.update(timeMs);
     this.water.render(this.canvas.width, this.canvas.height);
     this.creatures.render(timeMs, this.logicalW, this.logicalH);

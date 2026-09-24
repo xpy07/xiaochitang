@@ -7,6 +7,10 @@ export interface RenderUniforms {
   waveStrength: number;
   tint: ColorTint;
   brightness: number;
+  clipCenter: [number, number];
+  clipSize: [number, number];
+  clipShape: number;
+  aspect: number;
 }
 
 export class RenderEngine {
@@ -30,7 +34,6 @@ export class RenderEngine {
     this.program = this.createProgram(vertexSrc, fragmentSrc);
     gl.useProgram(this.program);
 
-    // Full-screen quad
     const positions = new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]);
     this.positionBuffer = gl.createBuffer()!;
     gl.bindBuffer(gl.ARRAY_BUFFER, this.positionBuffer);
@@ -40,8 +43,10 @@ export class RenderEngine {
     gl.enableVertexAttribArray(posLoc);
     gl.vertexAttribPointer(posLoc, 2, gl.FLOAT, false, 0, 0);
 
-    // Cache uniform locations
-    const names = ["u_time", "u_shallowColor", "u_deepColor", "u_waveStrength", "u_tint", "u_brightness"];
+    const names = [
+      "u_time", "u_shallowColor", "u_deepColor", "u_waveStrength",
+      "u_tint", "u_brightness", "u_clipCenter", "u_clipSize", "u_clipShape", "u_aspect",
+    ];
     for (const name of names) {
       this.uniforms[name] = gl.getUniformLocation(this.program, name);
     }
@@ -60,6 +65,10 @@ export class RenderEngine {
     gl.uniform1f(this.uniforms.u_waveStrength, uniforms.waveStrength);
     gl.uniform3f(this.uniforms.u_tint, uniforms.tint.r, uniforms.tint.g, uniforms.tint.b);
     gl.uniform1f(this.uniforms.u_brightness, uniforms.brightness);
+    gl.uniform2f(this.uniforms.u_clipCenter, ...uniforms.clipCenter);
+    gl.uniform2f(this.uniforms.u_clipSize, ...uniforms.clipSize);
+    gl.uniform1f(this.uniforms.u_clipShape, uniforms.clipShape);
+    gl.uniform1f(this.uniforms.u_aspect, uniforms.aspect);
 
     gl.bindBuffer(gl.ARRAY_BUFFER, this.positionBuffer);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);

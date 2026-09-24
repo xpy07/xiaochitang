@@ -152,11 +152,15 @@ document.getElementById("btn-achievements")?.addEventListener("click", () => {
   document.getElementById("btn-achievements")?.classList.toggle("active");
 });
 document.getElementById("btn-interact")?.addEventListener("click", () => {
-  toggleInteraction();
+  toggleInteraction().then(() => {
+    const on = document.body.classList.contains("interactive");
+    showTip(on ? "交互模式已开启" : "交互模式已关闭");
+  });
 });
 document.getElementById("btn-scene")?.addEventListener("click", () => {
   pond.scene.toggleMode();
   settings.syncState(pond.scene.mode, pond.scene.pondShape);
+  showTip(pond.scene.mode === "pond" ? "池塘模式" : "沉浸模式");
 });
 document.getElementById("btn-tool")?.addEventListener("click", () => {
   cursor.cycleTool();
@@ -167,7 +171,29 @@ document.getElementById("btn-tool")?.addEventListener("click", () => {
     btn.textContent = cursor.currentTool ? labels[cursor.currentTool] : "🔧";
     btn.classList.toggle("active", !!cursor.currentTool);
   }
+  showTip(cursor.currentTool ? `工具: ${labels[cursor.currentTool!]}` : "工具已关闭");
 });
+
+function showTip(msg: string): void {
+  let tip = document.getElementById("status-tip");
+  if (!tip) {
+    tip = document.createElement("div");
+    tip.id = "status-tip";
+    tip.style.cssText = `
+      position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+      padding: 8px 24px; border-radius: 20px;
+      background: rgba(8,18,28,0.85); backdrop-filter: blur(12px);
+      border: 1px solid rgba(140,200,220,0.2);
+      color: #5cc4d4; font-size: 14px; font-weight: 600;
+      z-index: 300; pointer-events: none;
+      transition: opacity 0.3s;
+    `;
+    document.body.appendChild(tip);
+  }
+  tip.textContent = msg;
+  tip.style.opacity = "1";
+  setTimeout(() => { tip.style.opacity = "0"; }, 1500);
+}
 
 safeListen("hotkey-toggle", () => {
   toggleInteraction().catch(console.error);
@@ -202,13 +228,19 @@ window.addEventListener("click", (e) => {
   if ((e.target as HTMLElement).closest?.("#editor")) return;
   if ((e.target as HTMLElement).closest?.("#settings")) return;
   if ((e.target as HTMLElement).closest?.("#achievements-panel")) return;
+  if ((e.target as HTMLElement).closest?.("#toolbar")) return;
   if (cursor.currentTool === InteractionTool.Feed) {
     pond.dropFood(e.clientX, e.clientY);
+    showTip("投喂！");
   }
   if (cursor.currentTool === InteractionTool.Place) {
     const types = Object.values(DecorationType);
     const type = types[Math.floor(Math.random() * types.length)];
     pond.placeDecoration(e.clientX, e.clientY, type);
+    showTip("放置: " + type);
+  }
+  if (!cursor.currentTool) {
+    showTip("先点 🔧 选择工具");
   }
 });
 

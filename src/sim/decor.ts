@@ -24,16 +24,16 @@ export class Decoration {
     this.tint = tint;
     switch (type) {
       case DecorationType.Rock:
-        this.width = 40; this.height = 30; this.radius = 20;
+        this.width = 70; this.height = 50; this.radius = 35;
         break;
       case DecorationType.Bridge:
-        this.width = 120; this.height = 20; this.radius = 60;
+        this.width = 160; this.height = 35; this.radius = 80;
         break;
       case DecorationType.Lotus:
-        this.width = 25; this.height = 25; this.radius = 12;
+        this.width = 45; this.height = 45; this.radius = 22;
         break;
       case DecorationType.Stone:
-        this.width = 15; this.height = 15; this.radius = 8;
+        this.width = 30; this.height = 30; this.radius = 15;
         break;
     }
   }
